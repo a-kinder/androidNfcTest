@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">NFC test app</string>
+    <string name="title_activity_main">Main Activity</string>
+
+    <string name="nfcReadOnlyErrorTitle">Chip is read only title</string>
+    <string name="nfcReadOnlyError">Chip is read only</string>
+
+    <string name="nfcBadSpaceErrorTitle">Bad space title</string>
+    <string name="nfcBadSpaceError">bad space</string>
+
+    <string name="nfcWritten">NFC written</string>
+    <string name="nfcWrittenTitle">NFC written title</string>
+
+    <string name="nfcTagLostErrorTitle">NFC tag lost error title</string>
+    <string name="nfcTagLostError">NFC tag lost error</string>
+
+    <string name="nfcFormattingErrorTitle">NFC formatting error title</string>
+    <string name="nfcFormattingError">NFC formatting error</string>
+
+
+    <string name="nfcNoNdefErrorTitle">NFC no ndef error title</string>
+    <string name="nfcNoNdefError">NFC no ndef error</string>
+
+    <string name="nfcUnknownErrorTitle">NFC unknown error title</string>
+    <string name="nfcUnknownError">NFC unknown error</string>
+</resources>
