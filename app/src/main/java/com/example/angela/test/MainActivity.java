@@ -1,16 +1,20 @@
 package com.example.angela.test;
 
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
+import android.view.View.*;
 import android.widget.*;
 import android.view.*;
-
+import android.os.Handler;//
 import java.io.*;
-
+import android.media.MediaPlayer;
 import javax.crypto.*;
+
 import android.app.*;
+
 import java.nio.charset.*;
+
 import android.support.v7.app.AlertDialog;
 import android.content.*;
 import android.nfc.*;
@@ -32,10 +36,11 @@ public class MainActivity extends Activity {
                 public void onClick(View v) {
 //
 //                    if (writeTag(getApplicationContext(), tag, "test data")) {
-//                        Toast toast = Toast.makeText(getApplicationContext(), "Tag written", Toast.LENGTH_LONG);
+//                        Toast toast = Toast.makeText(getApplicationContext(), "Tag written", Toast.LENGTH_SHORT);
 //                        toast.show();
 //                    }
-
+                    showToast(false);
+                    playNoise(R.raw.fail);
 
                 }
             });
@@ -46,9 +51,9 @@ public class MainActivity extends Activity {
             imgBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    AlertDialog d = onCreateDialog(getApplicationContext(),"test","test");
-                    d.show();
-              }
+                    showToast(true);
+                    playNoise(R.raw.success);
+                }
             });
         }
 
@@ -134,13 +139,11 @@ public class MainActivity extends Activity {
     }
 
     public void displayErrorDialog(Context context, int title, int error) {
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
-        alertDialogBuilder.setTitle(getResources().getString(title));
-        alertDialogBuilder.setMessage(getResources().getString(error));
-        alertDialogBuilder.show();
+        AlertDialog d = createDialog(getApplicationContext(), "test", "test");
+        d.show();
     }
 
-    public AlertDialog onCreateDialog(Context context, String title, String msg) {
+    public AlertDialog createDialog(Context context, String title, String msg) {
         AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.myDialog));
 
         builder.setTitle(title);
@@ -156,6 +159,50 @@ public class MainActivity extends Activity {
         return builder.create();
 
 
+    }
+
+    public void showToast(boolean success) {
+        LayoutInflater inflater = getLayoutInflater();
+        View layout = inflater.inflate(R.layout.toast,
+                (ViewGroup) findViewById(R.id.toast_layout_root));
+        if (success) {
+            layout.setBackgroundColor(Color.GREEN);
+        } else {
+            layout.setBackgroundColor(Color.RED);
+        }
+        layout.setAlpha(.5f);
+
+        TextView text = (TextView) layout.findViewById(R.id.text);
+        text.setTextSize(50);
+        if (success) {
+            text.setText("SUCCESS");
+        } else {
+            text.setText("FAIL");
+        }
+
+        final Toast toast = new Toast(getApplicationContext());
+        toast.setDuration(Toast.LENGTH_SHORT);
+        toast.setView(layout);
+        toast.show();
+
+        Handler handler = new Handler();//custom toast length
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                toast.cancel();
+            }
+        }, 100);
+    }
+    void playNoise(int sound)
+    {
+
+        final MediaPlayer mp = MediaPlayer.create(this, sound);
+////        btn.setOnClickListener(new OnClickListener(){
+////
+////            public void onClick(View v) {
+                mp.start();
+//            }
+//        });
     }
 }
 
