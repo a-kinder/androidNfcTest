@@ -2,6 +2,12 @@
     <string name="app_name">NFC test app</string>
     <string name="title_activity_main">Main Activity</string>
 
+    <string name="nfcNotEnabledTitle">NFC Error</string>
+    <string name="nfcNotEnabled">NFC is not enabled, please check your settings</string>
+
+    <string name="nfcNotAvailableTitle">NFC Error</string>
+    <string name="nfcNotAvailable">NFC does not appear to be available on this device</string>
+
     <string name="nfcReadOnlyErrorTitle">Chip is read only title</string>
     <string name="nfcReadOnlyError">Chip is read only</string>
 
