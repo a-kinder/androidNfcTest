@@ -7,9 +7,9 @@ import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.nfc.*;
 import android.nfc.tech.*;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Handler;//
+import android.os.*;
+//import android.os.Bundle;
+//import android.os.Handler;//
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AlertDialog;
@@ -19,6 +19,7 @@ import android.view.*;
 import android.widget.*;
 
 import java.io.*;
+import java.io.IOException.*;
 import java.nio.charset.*;
 import java.util.Arrays;
 
@@ -29,8 +30,13 @@ public class MainActivity extends Activity {
     public static final String TAG = "NfcDemo";
     public static final String MIME_TEXT_PLAIN = "text/plain";
     private NfcAdapter myNfcAdapter;
-    Button button;
-    ImageButton imgBtn;
+    private Button button;
+    private ImageButton imgBtn;
+    private EditText editText;
+    private AlertDialog dialog;
+    private PendingIntent pendingIntent;
+    private Intent ntnt;
+    private Tag tag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +44,10 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         initUI();
-        handleIntent(getIntent());
-
+        myNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        pendingIntent = PendingIntent.getActivity(
+                this, 0, new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+        //handleIntent(getIntent());
     }
 
     @Override
@@ -50,7 +58,14 @@ public class MainActivity extends Activity {
          * It's important, that the activity is in the foreground (resumed). Otherwise
          * an IllegalStateException is thrown. 
          */
-        setupForegroundDispatch(this, myNfcAdapter);
+        if (checkNfcAdapter()) {
+            // setupForegroundDispatch(this, myNfcAdapter);
+            myNfcAdapter.enableForegroundDispatch(this, pendingIntent, null, null);
+
+        } else {
+            dialog = createDialog(getApplicationContext(), R.string.nfcNotAvailableTitle, R.string.nfcNotAvailable, null);
+            dialog.show();
+        }
     }
 
     @Override
@@ -58,9 +73,16 @@ public class MainActivity extends Activity {
         /**
          * Call this before onPause, otherwise an IllegalArgumentException is thrown as well.
          */
-        stopForegroundDispatch(this, myNfcAdapter);
+        //stopForegroundDispatch(this, myNfcAdapter);
+        if (checkNfcAdapter()) {
+            // setupForegroundDispatch(this, myNfcAdapter);
+            myNfcAdapter.disableForegroundDispatch(this);
 
+        }
         super.onPause();
+        if (dialog != null) {
+            dialog.dismiss();
+        }
     }
 
     @Override
@@ -72,151 +94,85 @@ public class MainActivity extends Activity {
          *
          * In our case this method gets called, when the user attaches a Tag to the device.
          */
-        handleIntent(intent);
-    }
-
-    public static void stopForegroundDispatch(final Activity activity, NfcAdapter adapter) {
-        adapter.disableForegroundDispatch(activity);
-    }
-
-    public static void setupForegroundDispatch(final Activity activity, NfcAdapter adapter) {
-
-        final Intent intent = new Intent(activity.getApplicationContext(), activity.getClass());
-        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-        final PendingIntent pendingIntent = PendingIntent.getActivity(activity.getApplicationContext(), 0, intent, 0);
-
-        IntentFilter[] filters = new IntentFilter[1];
-        String[][] techList = new String[][]{};
-
-        // Notice that this is the same filter as in our manifest.
-        filters[0] = new IntentFilter();
-        filters[0].addAction(NfcAdapter.ACTION_NDEF_DISCOVERED);
-        filters[0].addCategory(Intent.CATEGORY_DEFAULT);
-        try {
-            filters[0].addDataType(MIME_TEXT_PLAIN);
-        } catch (MalformedMimeTypeException e) {
-            throw new RuntimeException("Check your mime type.");
-        }
-        adapter.enableForegroundDispatch(activity, pendingIntent, filters, techList);
-    }
-
-
-    private void handleIntent(Intent intent) {
-        if (checkNfcAdapter()) {
-            String action = intent.getAction();
-            if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
-
-                String type = intent.getType();
-                if (MIME_TEXT_PLAIN.equals(type)) {
-
-                    Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-                    new NdefReaderTask().execute(tag);
-
-                } else {
-                    Log.d(TAG, "Wrong mime type: " + type);
-                }
-            } else if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
-
-                // In case we would still use the Tech Discovered Intent
-                Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-                String[] techList = tag.getTechList();
-                String searchedTech = Ndef.class.getName();
-
-                for (String tech : techList) {
-                    if (searchedTech.equals(tech)) {
-                        new NdefReaderTask().execute(tag);
-                        break;
-                    }
-                }
-            }
-        }
+        tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        ntnt = intent;
+        // handleIntent(intent);
     }
 
     public boolean writeTag(Context context, Tag tag, String data) {
-        // Record to launch Play Store if app is not installed
-        NdefRecord appRecord = NdefRecord.createApplicationRecord(context.getPackageName());
-
-        // Record with actual data we care about
-        NdefRecord relayRecord = new NdefRecord(NdefRecord.TNF_MIME_MEDIA,
-                ("application/" + context.getPackageName())
-                        .getBytes(Charset.forName("US-ASCII")),
-                null, data.getBytes());
-
-        // Complete NDEF message with both records
-        NdefMessage message = new NdefMessage(new NdefRecord[]{relayRecord, appRecord});
-
         try {
-            // If the tag is already formatted, just write the message to it
+            NdefRecord[] records = {createRecord(data), createRecord("record two"), createRecord("record three")};///create multiple records here
+            NdefMessage message = new NdefMessage(records);
             Ndef ndef = Ndef.get(tag);
-            if (ndef != null) {
-                ndef.connect();
 
-                // Make sure the tag is writable
-                if (!ndef.isWritable()) {
-                    createDialog(context, R.string.nfcReadOnlyErrorTitle, R.string.nfcReadOnlyError, null);
-                    return false;
-                }
-
-                // Check if there's enough space on the tag for the message
-                int size = message.toByteArray().length;
-                if (ndef.getMaxSize() < size) {
-                    createDialog(context, R.string.nfcBadSpaceErrorTitle, R.string.nfcBadSpaceError, null);
-                    return false;
-                }
-
-                try {
-                    // Write the data to the tag
-                    ndef.writeNdefMessage(message);
-
-                    createDialog(context, R.string.nfcWrittenTitle, R.string.nfcWritten, null);//INFO DIALOG
-                    return true;
-                } catch (TagLostException tle) {
-                    createDialog(context, R.string.nfcTagLostErrorTitle, R.string.nfcTagLostError, null);
-                    return false;
-                } catch (IOException ioe) {
-                    createDialog(context, R.string.nfcFormattingErrorTitle, R.string.nfcFormattingError, null);
-                    return false;
-                } catch (FormatException fe) {
-                    createDialog(context, R.string.nfcFormattingErrorTitle, R.string.nfcFormattingError, null);
-                    return false;
-                }
-                // If the tag is not formatted, format it with the message
-            } else {
-                NdefFormatable format = NdefFormatable.get(tag);
-                if (format != null) {
-                    try {
-                        format.connect();
-                        format.format(message);
-                        createDialog(context, R.string.nfcWrittenTitle, R.string.nfcWritten, null);//INFO DIALOG
-                        return true;
-                    } catch (TagLostException tle) {
-                        createDialog(context, R.string.nfcTagLostErrorTitle, R.string.nfcTagLostError, null);
-                        return false;
-                    } catch (IOException ioe) {
-                        createDialog(context, R.string.nfcFormattingErrorTitle, R.string.nfcFormattingError, null);
-                        return false;
-                    } catch (FormatException fe) {
-                        createDialog(context, R.string.nfcFormattingErrorTitle, R.string.nfcFormattingError, null);
-                        return false;
-                    }
-                } else {
-                    createDialog(context, R.string.nfcNoNdefErrorTitle, R.string.nfcNoNdefError, null);
-                    return false;
-                }
-            }
+            ndef.connect();
+            ndef.writeNdefMessage(message);
+            ndef.close();
+            return true;
+        } catch (UnsupportedEncodingException u) {
+            Log.w("UnsupportedEncoding", u.getMessage());
+        } catch (IOException i) {
+            Log.w("IOException", i.getMessage());
+        } catch (FormatException f) {
+            Log.w("FormatException", f.getMessage());
         } catch (Exception e) {
-            createDialog(context, R.string.nfcUnknownErrorTitle, R.string.nfcUnknownError, null);
+            Log.w("Unknown Exception", e.getMessage());
         }
 
         return false;
     }
 
-    public String readTag() {
-        String data = "";
-        return data;
+    private NdefRecord createRecord(String text) throws UnsupportedEncodingException {
+
+        //create the message in according with the standard
+        String lang = "en";
+        byte[] textBytes = text.getBytes();
+        byte[] langBytes = lang.getBytes("US-ASCII");
+        int langLength = langBytes.length;
+        int textLength = textBytes.length;
+
+        byte[] payload = new byte[1 + langLength + textLength];
+        payload[0] = (byte) langLength;
+
+        // copy langbytes and textbytes into payload
+        System.arraycopy(langBytes, 0, payload, 1, langLength);
+        System.arraycopy(textBytes, 0, payload, 1 + langLength, textLength);
+
+        return new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], payload);
     }
 
+    public String readTag() {
+        String data = "No data";
+        if (tag != null) {
+
+            Ndef ndef = Ndef.get(tag);
+
+
+            try {
+                ndef.connect();
+                Parcelable[] messages = ntnt.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+
+                if (messages != null) {
+                    NdefMessage[] ndefMessages = new NdefMessage[messages.length];
+                    for (int i = 0; i < messages.length; i++) {
+                        ndefMessages[i] = (NdefMessage) messages[i];
+
+
+                    }
+                    NdefRecord record = ndefMessages[0].getRecords()[0];
+                    byte[] payload = record.getPayload();
+                    data = new String(payload);
+
+
+                    ndef.close();
+
+                }
+            } catch (Exception e) {
+                Toast.makeText(getApplicationContext(), "Cannot Read From Tag.", Toast.LENGTH_LONG).show();
+            }
+        }
+        return data;
+    }
 
     public AlertDialog createDialog(Context context, int title, int msg, Runnable block) {
         AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.myDialog));
@@ -266,9 +222,9 @@ public class MainActivity extends Activity {
         TextView text = (TextView) layout.findViewById(R.id.text);
         text.setTextSize(50);
         if (success) {
-            text.setText("SUCCESS");
+            text.setText(R.string.success);
         } else {
-            text.setText("FAIL");
+            text.setText(R.string.fail);
         }
 
         final Toast toast = new Toast(getApplicationContext());
@@ -296,7 +252,8 @@ public class MainActivity extends Activity {
 
 
         if (myNfcAdapter == null) {//no nfc available
-            createDialog(getApplicationContext(), R.string.nfcNotAvailableTitle, R.string.nfcNotAvailable, null).show();
+
+
             return false;
         } else if (!myNfcAdapter.isEnabled()) {//nfc not enabled
             Runnable block = new Runnable() {
@@ -306,12 +263,14 @@ public class MainActivity extends Activity {
                     startActivity(intent);
                 }
             };
-            createDialog(getApplicationContext(), R.string.nfcNotEnabledTitle, R.string.nfcNotEnabled, block).show();
+            dialog = createDialog(getApplicationContext(), R.string.nfcNotEnabledTitle, R.string.nfcNotEnabled, block);
+            dialog.show();
         }
         return true;
     }
 
     public void initUI() {
+        editText = (EditText) findViewById(R.id.editText);
         button = (Button) findViewById(R.id.button);
         if (button != null) {
             button.setOnClickListener(new View.OnClickListener() {
@@ -321,8 +280,14 @@ public class MainActivity extends Activity {
 //                    if (writeTag(getApplicationContext(), tag, "test data")) {
 //                       showToast(true
 //                    }
-                    showToast(false);
-                    //playNoise(R.raw.fail);
+                    //showToast(false);
+                    //playNoise(R.raw.fail);if9
+
+                    if (tag != null && writeTag(getApplicationContext(), tag, editText.getText().toString())) {
+                        showToast(true);
+                    } else {
+                        showToast(false);
+                    }
 
                 }
             });
@@ -333,73 +298,23 @@ public class MainActivity extends Activity {
             imgBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    showToast(true);
+                    //showToast(true);
                     //playNoise(R.raw.success);
+                    if (tag != null) {
+                        Runnable block = new Runnable() {
+                            @Override
+                            public void run() {
+                                tag = null;
+                            }
+                        };
+                        createDialog(getApplicationContext(), "Tag Contents", readTag(), block).show();
+                    } else {
+                        showToast(false);
+                    }
+
                 }
             });
         }
     }
 
-    private class NdefReaderTask extends AsyncTask<Tag, Void, String> {
-
-        @Override
-        protected String doInBackground(Tag... params) {
-            Tag tag = params[0];
-
-            Ndef ndef = Ndef.get(tag);
-            if (ndef == null) {
-                // NDEF is not supported by this Tag.
-                return null;
-            }
-
-            NdefMessage ndefMessage = ndef.getCachedNdefMessage();
-
-            NdefRecord[] records = ndefMessage.getRecords();
-            for (NdefRecord ndefRecord : records) {
-                if (ndefRecord.getTnf() == NdefRecord.TNF_WELL_KNOWN && Arrays.equals(ndefRecord.getType(), NdefRecord.RTD_TEXT)) {
-                    try {
-                        return readText(ndefRecord);
-                    } catch (UnsupportedEncodingException e) {
-                        Log.e(TAG, "Unsupported Encoding", e);
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        private String readText(NdefRecord record) throws UnsupportedEncodingException {
-        /*
-         * See NFC forum specification for "Text Record Type Definition" at 3.2.1
-         *
-         * http://www.nfc-forum.org/specs/
-         *
-         * bit_7 defines encoding
-         * bit_6 reserved for future use, must be 0
-         * bit_5..0 length of IANA language code
-         */
-
-            byte[] payload = record.getPayload();
-
-            // Get the Text Encoding
-            String textEncoding = ((payload[0] & 128) == 0) ? "UTF-8" : "UTF-16";
-
-            // Get the Language Code
-            int languageCodeLength = payload[0] & 0063;
-
-            // String languageCode = new String(payload, 1, languageCodeLength, "US-ASCII");
-            // e.g. "en"
-
-            // Get the Text
-            return new String(payload, languageCodeLength + 1, payload.length - languageCodeLength - 1, textEncoding);
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            if (result != null) {
-               // mTextView.setText("Read content: " + result);
-                createDialog(getApplicationContext(), "NFC Data", result, null);
-            }
-        }
-    }
 }
