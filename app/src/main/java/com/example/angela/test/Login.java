@@ -1,6 +1,7 @@
 package com.example.angela.test;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.*;
@@ -29,10 +30,12 @@ public class Login extends Activity {
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
                 Location itemValue = (Location) listview.getItemAtPosition(position);
 
-                Toast.makeText(getApplicationContext(), "ID :" + itemValue.id + "  Name : " + itemValue.name, Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(Login.this, MainActivity.class);
+                intent.putExtra("locName", itemValue.name);
+                intent.putExtra("locId", itemValue.id);
+                startActivity(intent);
             }
         });
 

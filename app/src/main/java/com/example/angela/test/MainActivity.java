@@ -33,10 +33,13 @@ public class MainActivity extends Activity {
     private Button button;
     private ImageButton imgBtn;
     private EditText editText;
+    private TextView textView;
     private AlertDialog dialog;
     private PendingIntent pendingIntent;
     private Intent ntnt;
     private Tag tag;
+    private String name;
+    private Integer id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +50,10 @@ public class MainActivity extends Activity {
         myNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         pendingIntent = PendingIntent.getActivity(
                 this, 0, new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+        name = this.getIntent().getStringExtra("locName");
+        id = this.getIntent().getIntExtra("locId", 0);
+        textView = (TextView)findViewById(R.id.textView);
+        textView.setText(name);
         //handleIntent(getIntent());
     }
 

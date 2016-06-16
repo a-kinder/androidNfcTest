@@ -39,18 +39,22 @@
         android:layout_width="250dp"
         android:layout_height="250dp"
         android:id="@+id/imageButton"
-        android:background="@drawable/eye_scan"
+        android:background="@drawable/scan"
 
         android:layout_below="@+id/button"
         android:layout_centerHorizontal="true" />
 
-    <ImageView
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/imageView"
+        android:text="New Text"
+        android:id="@+id/textView"
         android:layout_alignParentBottom="true"
-        android:background="@drawable/logo"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/imageButton"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:textSize="20dp" />
 
 </RelativeLayout>
