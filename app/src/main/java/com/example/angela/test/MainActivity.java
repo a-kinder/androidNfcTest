@@ -9,13 +9,11 @@ import android.nfc.tech.*;
 import android.os.*;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.ActionBar.LayoutParams;
 import android.util.*;
 import android.view.*;
 import android.widget.*;
 
 import java.io.*;
-import java.nio.charset.*;
 import java.util.*;
 
 public class MainActivity extends Activity {
@@ -30,10 +28,22 @@ public class MainActivity extends Activity {
     private PendingIntent pendingIntent;
     private Intent ntnt;
     private Tag tag;
+    private NfcUtils nfcUtil = new NfcUtils();
     ArrayList<Location> locations;
     String name;
     Integer id;
     ArrayList<String> currData = new ArrayList<String>();
+    private final String[][] techList = new String[][]{
+            new String[]{
+                    NfcA.class.getName(),
+                    NfcB.class.getName(),
+                    NfcF.class.getName(),
+                    NfcV.class.getName(),
+                    IsoDep.class.getName(),
+                    MifareClassic.class.getName(),
+                    MifareUltralight.class.getName(), Ndef.class.getName()
+            }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,12 +67,39 @@ public class MainActivity extends Activity {
          */
         if (checkNfcAdapter()) {
             // setupForegroundDispatch(this, myNfcAdapter);
-            myNfcAdapter.enableForegroundDispatch(this, pendingIntent, null, null);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+            // creating intent receiver for NFC events:
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(NfcAdapter.ACTION_TAG_DISCOVERED);
+            filter.addAction(NfcAdapter.ACTION_NDEF_DISCOVERED);
+            filter.addAction(NfcAdapter.ACTION_TECH_DISCOVERED);
+            // enabling foreground dispatch for getting intent from NFC event:
+            NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(this);
+            nfcAdapter.enableForegroundDispatch(this, pendingIntent, new IntentFilter[]{filter}, this.techList);
+
+
+            //  myNfcAdapter.enableForegroundDispatch(this, pendingIntent, null, null);
+
 
         } else {
             dialog = createDialog(getApplicationContext(), R.string.nfcNotAvailableTitle, R.string.nfcNotAvailable, null);
             dialog.show();
         }
+
+    }
+
+    private String ByteArrayToHexString(byte[] inarray) {
+        int i, j, in;
+        String[] hex = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"};
+        String out = "";
+        for (j = 0; j < inarray.length; ++j) {
+            in = (int) inarray[j] & 0xff;
+            i = (in >> 4) & 0x0f;
+            out += hex[i];
+            i = in & 0x0f;
+            out += hex[i];
+        }
+        return out;
     }
 
     @Override
@@ -84,131 +121,14 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onNewIntent(Intent intent) {
-        /**
-         * This method gets called, when a new Intent gets associated with the current activity instance.
-         * Instead of creating a new activity, onNewIntent will be called. For more information have a look
-         * at the documentation.
-         *
-         * In our case this method gets called, when the user attaches a Tag to the device.
-         */
+
+        String uid = this.ByteArrayToHexString(intent.getByteArrayExtra(NfcAdapter.EXTRA_ID));
+        Toast.makeText(getApplicationContext(), uid, Toast.LENGTH_SHORT).show();
         tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
         ntnt = intent;
-        // handleIntent(intent);
+        checkCreds();
     }
 
-    public boolean writeTag(Context context, Tag tag, ArrayList<String> data) {
-        try {
-            NdefRecord[] records;
-//            if (!currData.isEmpty()) {
-//                int size = currData.size() + 1;
-//                records = new NdefRecord[size];
-//
-//                for (int i = 1; i < size + 1; i++) {
-//                    records[i] = createTextRecord(data.get(i - 1), Locale.ENGLISH, true);
-//                }
-//            } else {
-                records = new NdefRecord[1];
-           // }
-
-            records[0] = createTextRecord(name.toString(), Locale.ENGLISH, true);
-
-            NdefMessage message = new NdefMessage(records);
-            Ndef ndef = Ndef.get(tag);
-
-            ndef.connect();
-            ndef.writeNdefMessage(message);
-            ndef.close();
-            return true;
-        } catch (UnsupportedEncodingException u) {
-            Log.w("UnsupportedEncoding", u.getMessage());
-        } catch (IOException i) {
-            Log.w("IOException", i.getMessage());
-        } catch (FormatException f) {
-            Log.w("FormatException", f.getMessage());
-        } catch (Exception e) {
-            Log.w("Unknown Exception", e.getMessage());
-        }
-
-        return false;
-    }
-
-    public NdefRecord createTextRecord(String payload, Locale locale, boolean encodeInUtf8) {
-        byte[] langBytes = locale.getLanguage().getBytes(Charset.forName("US-ASCII"));
-        Charset utfEncoding = encodeInUtf8 ? Charset.forName("UTF-8") : Charset.forName("UTF-16");
-        byte[] textBytes = payload.getBytes(utfEncoding);
-        int utfBit = encodeInUtf8 ? 0 : (1 << 7);
-        char status = (char) (utfBit + langBytes.length);
-        byte[] data = new byte[1 + langBytes.length + textBytes.length];
-        data[0] = (byte) status;
-        System.arraycopy(langBytes, 0, data, 1, langBytes.length);//copies array: original array, start position, dest array, end position, length
-        System.arraycopy(textBytes, 0, data, 1 + langBytes.length, textBytes.length);
-        NdefRecord record = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], data);
-        return record;
-    }
-
-
-    public ArrayList<String> readTag() {
-        ArrayList<String> data = new ArrayList<String>();
-
-
-        if (tag != null) {
-
-            Ndef ndef = Ndef.get(tag);
-
-            try {
-
-                ndef.connect();
-                Parcelable[] msgs = ntnt.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
-
-                NdefMessage msg = (NdefMessage) msgs[0];
-                for (int i = 0; i < msg.getRecords().length; i++) {
-                    NdefRecord record = msg.getRecords()[i];
-
-
-                    /////
-                    byte[] payload = record.getPayload();
-
-        /*
-     * payload[0] contains the "Status Byte Encodings" field, per the
-     * NFC Forum "Text Record Type Definition" section 3.2.1.
-     *
-     * bit7 is the Text Encoding Field.
-     *
-     *
-     *
-     * Bit_6 is reserved for future use and must be set to zero.
-     *
-     * Bits 5 to 0 are the length of the IANA language code.
-     */
-
-                    //Get the Text Encoding
-                    String textEncoding = ((payload[0] & 0200) == 0) ? "UTF-8" : "UTF-16";//if (Bit_7 == 0): The text is encoded in UTF-8 if (Bit_7 == 1): The text is encoded in UTF16
-
-                    //Get the Language Code
-                    int languageCodeLength = payload[0] & 0077;
-                    String languageCode = new String(payload, 1, languageCodeLength, "US-ASCII");
-
-                    //Get the Text
-                    String text = new String(payload, languageCodeLength + 1, payload.length - languageCodeLength - 1, textEncoding);
-
-
-                    data.add(text);
-
-                }
-                if (data.isEmpty()) {
-                    data.add("no data");
-                }
-
-                ndef.close();
-
-
-            } catch (Exception e) {
-                Toast.makeText(getApplicationContext(), "Cannot Read From Tag.", Toast.LENGTH_LONG).show();
-            }
-        }
-        currData.addAll(data);
-        return data;
-    }
 
     public AlertDialog createDialog(Context context, int title, int msg, Runnable block) {
         AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.myDialog));
@@ -349,7 +269,7 @@ public class MainActivity extends Activity {
                     //showToast(false);
                     //playNoise(R.raw.fail);if9
 
-                    if (tag != null && writeTag(getApplicationContext(), tag, currData)) {
+                    if (tag != null && nfcUtil.writeTag(getApplicationContext(), tag, currData, name)) {
                         showToast(true);
                     } else {
                         showToast(false);
@@ -366,24 +286,13 @@ public class MainActivity extends Activity {
                 public void onClick(View v) {
                     //showToast(true);
                     //playNoise(R.raw.success);
-                    if (tag != null) {
-                        Runnable block = new Runnable() {
-                            @Override
-                            public void run() {
-                                tag = null;
-                            }
-                        };
-                        createDialog(getApplicationContext(), "Tag Contents", readTag(), block).show();
-                    } else {
-                        showToast(false);
-                    }
+//
 
                 }
             });
         }
-        btnBack = (Button)findViewById(R.id.btnBack);
-        if(btnBack != null)
-        {
+        btnBack = (Button) findViewById(R.id.btnBack);
+        if (btnBack != null) {
             btnBack.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -393,6 +302,22 @@ public class MainActivity extends Activity {
         }
 
 
+    }
+
+    public void checkCreds() {
+        if (tag != null) {
+
+            currData.addAll(nfcUtil.readTag(tag, ntnt));
+            if (currData.contains(name)) {
+                showToast(true);
+            } else {
+                showToast(false);
+            }
+
+        } else {
+            showToast(false);
+        }
+        tag = null;
     }
 
 }

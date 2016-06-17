@@ -27,15 +27,10 @@
                                 
                 <action android:name="android.nfc.action.NDEF_DISCOVERED" />
                                 
-                <data android:mimeType="text/pg" />
+                      <data android:mimeType="application/vnd.angela.locations"/>
                                
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-            <!--<intent-filter>-->
-            <!--<action android:name="android.nfc.action.NDEF_DISCOVERED" />-->
-            <!--<category android:name="android.intent.category.DEFAULT" />-->
-            <!--&lt;!&ndash; <data android:mimeType="text/plain" /> &ndash;&gt;-->
-            <!--</intent-filter>-->
             <intent-filter>
                 <action android:name="android.nfc.action.TECH_DISCOVERED" />
                 <category android:name="android.intent.category.DEFAULT" />
