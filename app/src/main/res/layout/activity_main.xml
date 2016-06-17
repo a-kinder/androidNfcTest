@@ -7,29 +7,14 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.angela.test.MainActivity">
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="textMultiLine"
-        android:ems="10"
-        android:id="@+id/editText"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:maxLines="5"
-        android:minLines="5"
-        android:nestedScrollingEnabled="true" />
+    tools:context="com.example.angela.test.MainActivity"
+    android:id="@+id/layout">
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="write to chip"
         android:id="@+id/button"
-        android:layout_below="@+id/editText"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentRight="true"
@@ -40,7 +25,7 @@
         android:layout_height="250dp"
         android:id="@+id/imageButton"
         android:background="@drawable/scan"
-
+        android:layout_marginTop="20dp"
         android:layout_below="@+id/button"
         android:layout_centerHorizontal="true" />
 
@@ -49,12 +34,22 @@
         android:layout_height="wrap_content"
         android:text="New Text"
         android:id="@+id/textView"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/imageButton"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:textSize="20dp" />
+        android:gravity="center"
+        android:textSize="20sp"
+        android:layout_below="@+id/imageButton"
+        android:layout_above="@+id/btnBack" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Back"
+        android:id="@+id/btnBack"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
 </RelativeLayout>

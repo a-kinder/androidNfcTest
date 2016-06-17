@@ -2,24 +2,33 @@ package com.example.angela.test;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.media.audiofx.BassBoost;
 import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.view.View;
 import android.widget.*;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Login extends Activity {
     ListView listview;
-    Location[] locations = {
-            new Location("Front Door", 1),
-            new Location("VIP", 2)
-    };
+    ArrayList<Location> locations = new ArrayList<Location>();
+
+
+//    Location[] locations = {
+//            new Location("Front Door", 1),
+//            new Location("VIP", 2)
+//    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
+        locations.add(new Location("VIP", 0));
+        locations.add(new Location("Front Gate", 1));
         listview = (ListView)
                 findViewById(R.id.listView);
 
@@ -41,20 +50,6 @@ public class Login extends Activity {
 
 
     }
-private class Location
-{
-    public String name;
-    public int id;
 
-    public Location(String name, int id)
-    {
-        this.name = name;
-        this.id = id;
-    }
-    @Override
-    public String toString() {//this is what shows in the listview
-        return this.name;
-    }
-}
 }
 

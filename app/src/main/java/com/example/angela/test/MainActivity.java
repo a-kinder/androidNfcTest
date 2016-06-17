@@ -2,58 +2,48 @@ package com.example.angela.test;
 
 import android.app.*;
 import android.content.*;
-import android.content.IntentFilter.*;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.nfc.*;
 import android.nfc.tech.*;
 import android.os.*;
-//import android.os.Bundle;
-//import android.os.Handler;//
 import android.provider.Settings;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
-import android.view.View.*;
+import android.support.v7.app.ActionBar.LayoutParams;
+import android.util.*;
 import android.view.*;
 import android.widget.*;
 
 import java.io.*;
-import java.io.IOException.*;
 import java.nio.charset.*;
-import java.util.Arrays;
-
-import javax.crypto.*;
-
+import java.util.*;
 
 public class MainActivity extends Activity {
     public static final String TAG = "NfcDemo";
     public static final String MIME_TEXT_PLAIN = "text/plain";
     private NfcAdapter myNfcAdapter;
-    private Button button;
-    private ImageButton imgBtn;
-    private EditText editText;
-    private TextView textView;
+    Button button;
+    ImageButton imgBtn;
+    TextView textView;
+    Button btnBack;
     private AlertDialog dialog;
     private PendingIntent pendingIntent;
     private Intent ntnt;
     private Tag tag;
-    private String name;
-    private Integer id;
+    ArrayList<Location> locations;
+    String name;
+    Integer id;
+    ArrayList<String> currData = new ArrayList<String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         initUI();
         myNfcAdapter = NfcAdapter.getDefaultAdapter(this);
-        pendingIntent = PendingIntent.getActivity(
-                this, 0, new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
-        name = this.getIntent().getStringExtra("locName");
-        id = this.getIntent().getIntExtra("locId", 0);
-        textView = (TextView)findViewById(R.id.textView);
-        textView.setText(name);
+
         //handleIntent(getIntent());
     }
 
@@ -106,9 +96,22 @@ public class MainActivity extends Activity {
         // handleIntent(intent);
     }
 
-    public boolean writeTag(Context context, Tag tag, String data) {
+    public boolean writeTag(Context context, Tag tag, ArrayList<String> data) {
         try {
-            NdefRecord[] records = {createRecord(data), createRecord("record two"), createRecord("record three")};///create multiple records here
+            NdefRecord[] records;
+//            if (!currData.isEmpty()) {
+//                int size = currData.size() + 1;
+//                records = new NdefRecord[size];
+//
+//                for (int i = 1; i < size + 1; i++) {
+//                    records[i] = createTextRecord(data.get(i - 1), Locale.ENGLISH, true);
+//                }
+//            } else {
+                records = new NdefRecord[1];
+           // }
+
+            records[0] = createTextRecord(name.toString(), Locale.ENGLISH, true);
+
             NdefMessage message = new NdefMessage(records);
             Ndef ndef = Ndef.get(tag);
 
@@ -129,55 +132,81 @@ public class MainActivity extends Activity {
         return false;
     }
 
-    private NdefRecord createRecord(String text) throws UnsupportedEncodingException {
-
-        //create the message in according with the standard
-        String lang = "en";
-        byte[] textBytes = text.getBytes();
-        byte[] langBytes = lang.getBytes("US-ASCII");
-        int langLength = langBytes.length;
-        int textLength = textBytes.length;
-
-        byte[] payload = new byte[1 + langLength + textLength];
-        payload[0] = (byte) langLength;
-
-        // copy langbytes and textbytes into payload
-        System.arraycopy(langBytes, 0, payload, 1, langLength);
-        System.arraycopy(textBytes, 0, payload, 1 + langLength, textLength);
-
-        return new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], payload);
+    public NdefRecord createTextRecord(String payload, Locale locale, boolean encodeInUtf8) {
+        byte[] langBytes = locale.getLanguage().getBytes(Charset.forName("US-ASCII"));
+        Charset utfEncoding = encodeInUtf8 ? Charset.forName("UTF-8") : Charset.forName("UTF-16");
+        byte[] textBytes = payload.getBytes(utfEncoding);
+        int utfBit = encodeInUtf8 ? 0 : (1 << 7);
+        char status = (char) (utfBit + langBytes.length);
+        byte[] data = new byte[1 + langBytes.length + textBytes.length];
+        data[0] = (byte) status;
+        System.arraycopy(langBytes, 0, data, 1, langBytes.length);//copies array: original array, start position, dest array, end position, length
+        System.arraycopy(textBytes, 0, data, 1 + langBytes.length, textBytes.length);
+        NdefRecord record = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], data);
+        return record;
     }
 
-    public String readTag() {
-        String data = "No data";
+
+    public ArrayList<String> readTag() {
+        ArrayList<String> data = new ArrayList<String>();
+
+
         if (tag != null) {
 
             Ndef ndef = Ndef.get(tag);
 
-
             try {
+
                 ndef.connect();
-                Parcelable[] messages = ntnt.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+                Parcelable[] msgs = ntnt.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
 
-                if (messages != null) {
-                    NdefMessage[] ndefMessages = new NdefMessage[messages.length];
-                    for (int i = 0; i < messages.length; i++) {
-                        ndefMessages[i] = (NdefMessage) messages[i];
+                NdefMessage msg = (NdefMessage) msgs[0];
+                for (int i = 0; i < msg.getRecords().length; i++) {
+                    NdefRecord record = msg.getRecords()[i];
 
 
-                    }
-                    NdefRecord record = ndefMessages[0].getRecords()[0];
+                    /////
                     byte[] payload = record.getPayload();
-                    data = new String(payload);
+
+        /*
+     * payload[0] contains the "Status Byte Encodings" field, per the
+     * NFC Forum "Text Record Type Definition" section 3.2.1.
+     *
+     * bit7 is the Text Encoding Field.
+     *
+     *
+     *
+     * Bit_6 is reserved for future use and must be set to zero.
+     *
+     * Bits 5 to 0 are the length of the IANA language code.
+     */
+
+                    //Get the Text Encoding
+                    String textEncoding = ((payload[0] & 0200) == 0) ? "UTF-8" : "UTF-16";//if (Bit_7 == 0): The text is encoded in UTF-8 if (Bit_7 == 1): The text is encoded in UTF16
+
+                    //Get the Language Code
+                    int languageCodeLength = payload[0] & 0077;
+                    String languageCode = new String(payload, 1, languageCodeLength, "US-ASCII");
+
+                    //Get the Text
+                    String text = new String(payload, languageCodeLength + 1, payload.length - languageCodeLength - 1, textEncoding);
 
 
-                    ndef.close();
+                    data.add(text);
 
                 }
+                if (data.isEmpty()) {
+                    data.add("no data");
+                }
+
+                ndef.close();
+
+
             } catch (Exception e) {
                 Toast.makeText(getApplicationContext(), "Cannot Read From Tag.", Toast.LENGTH_LONG).show();
             }
         }
+        currData.addAll(data);
         return data;
     }
 
@@ -203,6 +232,27 @@ public class MainActivity extends Activity {
         final Runnable b = block;
         builder.setTitle(title);
         builder.setMessage(msg);
+
+        builder.setPositiveButton("Close", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                if (b != null) {
+                    b.run();
+                }
+            }
+        });
+
+        return builder.create();
+    }
+
+    public AlertDialog createDialog(Context context, String title, ArrayList<String> msg, Runnable block) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.myDialog));
+        final Runnable b = block;
+        builder.setTitle(title);
+        String message = "";
+        for (int i = 0; i < msg.size(); i++) {
+            message += msg.get(i) + "\n";
+        }
+        builder.setMessage(message);
 
         builder.setPositiveButton("Close", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
@@ -277,7 +327,16 @@ public class MainActivity extends Activity {
     }
 
     public void initUI() {
-        editText = (EditText) findViewById(R.id.editText);
+
+        pendingIntent = PendingIntent.getActivity(
+                this, 0, new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+        name = this.getIntent().getStringExtra("locName");
+        id = this.getIntent().getIntExtra("locId", 0);
+        textView = (TextView) findViewById(R.id.textView);
+        textView.setText(name);
+
+
+        //editText = (EditText) findViewById(R.id.editText);
         button = (Button) findViewById(R.id.button);
         if (button != null) {
             button.setOnClickListener(new View.OnClickListener() {
@@ -290,7 +349,7 @@ public class MainActivity extends Activity {
                     //showToast(false);
                     //playNoise(R.raw.fail);if9
 
-                    if (tag != null && writeTag(getApplicationContext(), tag, editText.getText().toString())) {
+                    if (tag != null && writeTag(getApplicationContext(), tag, currData)) {
                         showToast(true);
                     } else {
                         showToast(false);
@@ -322,6 +381,18 @@ public class MainActivity extends Activity {
                 }
             });
         }
+        btnBack = (Button)findViewById(R.id.btnBack);
+        if(btnBack != null)
+        {
+            btnBack.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    finish();
+                }
+            });
+        }
+
+
     }
 
 }
