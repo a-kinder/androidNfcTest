@@ -1,5 +1,6 @@
 package com.example.angela.test;
 
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,12 +10,12 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import java.util.ArrayList;
-
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.content.Context;
 public class LocationFragment extends Fragment {
     ArrayList<Location> locations = new ArrayList<>();
     ListView listview;
-
-
     public static LocationFragment newInstance() {
         return new LocationFragment();
     }
@@ -51,9 +52,13 @@ public class LocationFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Location itemValue = (Location) listview.getItemAtPosition(position);
-//set shared prefs
                 getActivity().setTitle(itemValue.name);
 
+                MainActivity activity = (MainActivity) getActivity();
+                Editor editor = activity.sharedpreferences.edit();
+                editor.putString(activity.NameKey, itemValue.name);
+                editor.putInt(activity.IdKey, itemValue.id);
+                editor.apply();
             }
         });
 

@@ -67,6 +67,10 @@ public class MainActivity extends AppCompatActivity {
                     MifareUltralight.class.getName(), Ndef.class.getName()
             }
     };
+    public static final String MyPREFERENCES = "MyPrefs";
+     SharedPreferences sharedpreferences;
+    public static final String NameKey = "nameKey";
+    public static final String IdKey = "idKey";
 
     ViewPager viewPager;
 
@@ -75,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
 
         myNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
@@ -83,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
 //        name = this.getIntent().getStringExtra("locName");
 //        id = this.getIntent().getIntExtra("locId", 0);
 
-fragmentList.add(LocationFragment.newInstance());
+        fragmentList.add(LocationFragment.newInstance());
         fragmentList.add(MainFragment.newInstance());
         fragmentList.add(WriteFragment.newInstance());
 
@@ -106,6 +111,9 @@ fragmentList.add(LocationFragment.newInstance());
         tabLayout.setupWithViewPager(viewPager);
 
         viewPager.setCurrentItem(1);
+
+
+        setTitle(sharedpreferences.getString(NameKey, "No Location Selected"));
 
 
     }
