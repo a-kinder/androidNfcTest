@@ -17,12 +17,6 @@ public class Login extends Activity {
     ListView listview;
     ArrayList<Location> locations = new ArrayList<Location>();
 
-
-//    Location[] locations = {
-//            new Location("Front Door", 1),
-//            new Location("VIP", 2)
-//    };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

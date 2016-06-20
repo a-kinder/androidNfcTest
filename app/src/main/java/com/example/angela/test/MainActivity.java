@@ -9,11 +9,9 @@ import android.nfc.tech.*;
 import android.os.*;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
-import android.util.*;
 import android.view.*;
 import android.widget.*;
-
-import java.io.*;
+import android.support.v4.widget.*;
 import java.util.*;
 
 public class MainActivity extends Activity {
@@ -32,6 +30,7 @@ public class MainActivity extends Activity {
     ArrayList<Location> locations;
     String name;
     Integer id;
+    String uid;
     ArrayList<String> currData = new ArrayList<String>();
     private final String[][] techList = new String[][]{
             new String[]{
@@ -55,6 +54,8 @@ public class MainActivity extends Activity {
         myNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
         //handleIntent(getIntent());
+
+
     }
 
     @Override
@@ -122,8 +123,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onNewIntent(Intent intent) {
 
-        String uid = this.ByteArrayToHexString(intent.getByteArrayExtra(NfcAdapter.EXTRA_ID));
-        Toast.makeText(getApplicationContext(), uid, Toast.LENGTH_SHORT).show();
+         uid = this.ByteArrayToHexString(intent.getByteArrayExtra(NfcAdapter.EXTRA_ID));
         tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
         ntnt = intent;
         checkCreds();
@@ -194,7 +194,7 @@ public class MainActivity extends Activity {
         } else {
             layout.setBackgroundColor(Color.RED);
         }
-        layout.setAlpha(.5f);
+        layout.setAlpha(.7f);
 
         TextView text = (TextView) layout.findViewById(R.id.text);
         text.setTextSize(50);

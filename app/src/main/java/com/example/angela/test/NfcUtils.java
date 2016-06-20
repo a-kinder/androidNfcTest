@@ -35,6 +35,7 @@ public class NfcUtils {
         NdefRecord record = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, "application/vnd.angela.locations".getBytes(), new byte[0], data);
         return record;
     }
+
     public boolean writeTag(Context context, Tag tag, ArrayList<String> data, String name) {
         try {
             NdefRecord[] records;
@@ -70,6 +71,7 @@ public class NfcUtils {
 
         return false;
     }
+
     public ArrayList<String> readTag(Tag tag, Intent intent) {
         ArrayList<String> data = new ArrayList<String>();
 
@@ -114,7 +116,7 @@ public class NfcUtils {
 
 
             } catch (Exception e) {
-data = null;
+                data = null;
             }
         }
         return data;
