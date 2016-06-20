@@ -34,8 +34,7 @@
     <string name="fail">FAIL</string>
     <string name="title_activity_write_nfc">WriteNfc</string>
 
-    <string-array
-        name="planets_array">
+    <string-array name="planets_array">
         <item>Jupiter</item>
         <item>Mars</item>
         <item>Uranus</item>
@@ -46,5 +45,6 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
+
     <!--https://developer.android.com/training/implementing-navigation/nav-drawer.html-->
 </resources>

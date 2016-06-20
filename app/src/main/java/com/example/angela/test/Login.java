@@ -14,33 +14,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Login extends Activity {
-    ListView listview;
-    ArrayList<Location> locations = new ArrayList<Location>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        locations.add(new Location("VIP", 0));
-        locations.add(new Location("Front Gate", 1));
-        listview = (ListView)
-                findViewById(R.id.listView);
-
-        ArrayAdapter<Location> myAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, locations);
-
-        listview.setAdapter(myAdapter);
-
-        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Location itemValue = (Location) listview.getItemAtPosition(position);
-
-                Intent intent = new Intent(Login.this, MainActivity.class);
-                intent.putExtra("locName", itemValue.name);
-                intent.putExtra("locId", itemValue.id);
-                startActivity(intent);
-            }
-        });
 
 
     }
