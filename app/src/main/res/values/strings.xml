@@ -1,4 +1,5 @@
 <resources>
+    <string name="scanText">place chip behind scanner</string>
     <string name="app_name">NFC test app</string>
     <string name="title_activity_main">Main Activity</string>
 
@@ -34,11 +35,6 @@
     <string name="fail">FAIL</string>
     <string name="title_activity_write_nfc">WriteNfc</string>
 
-    <string-array name="planets_array">
-        <item>Jupiter</item>
-        <item>Mars</item>
-        <item>Uranus</item>
-    </string-array>
     <string name="title_activity_nav">NavActivity</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>

@@ -51,7 +51,6 @@ public class MainActivity extends AppCompatActivity {
     private Intent ntnt;
     private Tag tag;
     private NfcUtils nfcUtil = new NfcUtils();
-    ArrayList<Location> locations;
     String name;
     Integer id;
     String uid;
@@ -78,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
 
