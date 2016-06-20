@@ -33,17 +33,19 @@ public class LocationFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View fragmentView = inflater.inflate(R.layout.fragment_location, container, false);
-        listview = (ListView) fragmentView.findViewById(R.id.listView);
+
         locations.add(new Location("VIP", 0));
         locations.add(new Location("Front Gate", 1));
-        locations.add(new Location("VIP", 2));
-        locations.add(new Location("Front Gate", 3));
 
-        ArrayAdapter<Location> myAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, locations);
+        // Inflate the layout for this fragment
+        View fragmentView = inflater.inflate(R.layout.fragment_location, container, false);
 
+        listview = (ListView)fragmentView.findViewById(R.id.listView);
+        ArrayAdapter<Location> myAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1,  locations);
         listview.setAdapter(myAdapter);
+
+
+
 
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -55,7 +57,7 @@ public class LocationFragment extends Fragment {
             }
         });
 
-        return inflater.inflate(R.layout.fragment_location, container, false);
+        return fragmentView;
 
     }
 }
