@@ -39,31 +39,14 @@ public class MainFragment extends Fragment {
 
     public static final String TAG = "NfcDemo";
         public static final String MIME_TEXT_PLAIN = "text/plain";
-    Button button;
-    ImageButton imgBtn;
-    TextView textView;
-    Button btnBack;
+
     private AlertDialog dialog;
     private PendingIntent pendingIntent;
     private Intent ntnt;
     private Tag tag;
     private NfcUtils nfcUtil = new NfcUtils();
-    ArrayList<Location> locations;
-    String name;
-    Integer id;
-    String uid;
-    ArrayList<String> currData = new ArrayList<String>();
-    private final String[][] techList = new String[][]{
-            new String[]{
-                    NfcA.class.getName(),
-                    NfcB.class.getName(),
-                    NfcF.class.getName(),
-                    NfcV.class.getName(),
-                    IsoDep.class.getName(),
-                    MifareClassic.class.getName(),
-                    MifareUltralight.class.getName(), Ndef.class.getName()
-            }
-    };
+
+
 
 
     public static MainFragment newInstance() {

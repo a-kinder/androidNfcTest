@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private AlertDialog dialog;
     private PendingIntent pendingIntent;
     private Intent ntnt;
-    private Tag tag;
+    protected Tag tag;
     private NfcUtils nfcUtil = new NfcUtils();
     String name;
     Integer id;
@@ -83,11 +83,6 @@ public class MainActivity extends AppCompatActivity {
 
         myNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
-//        pendingIntent = PendingIntent.getActivity(
-//                this, 0, new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
-//        name = this.getIntent().getStringExtra("locName");
-//        id = this.getIntent().getIntExtra("locId", 0);
-
         fragmentList.add(LocationFragment.newInstance());
         fragmentList.add(MainFragment.newInstance());
         fragmentList.add(WriteFragment.newInstance());
@@ -112,9 +107,9 @@ public class MainActivity extends AppCompatActivity {
 
         viewPager.setCurrentItem(1);
 
+        name = sharedpreferences.getString(NameKey, "No Location Selected");
 
-        setTitle(sharedpreferences.getString(NameKey, "No Location Selected"));
-
+        setTitle(name);
 
     }
 
@@ -152,12 +147,14 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onNewIntent(Intent intent) {
-        viewPager.setCurrentItem(1);
 
         uid = this.ByteArrayToHexString(intent.getByteArrayExtra(NfcAdapter.EXTRA_ID));
         tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
         ntnt = intent;
-        checkCreds();
+        if(viewPager.getCurrentItem() == 1)
+        {
+            checkCreds();
+        }
     }
 
     @Override

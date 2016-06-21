@@ -47,10 +47,11 @@ public class NfcUtils {
 //                    records[i] = createTextRecord(data.get(i - 1), Locale.ENGLISH, true);
 //                }
 //            } else {
-            records = new NdefRecord[1];
+            records = new NdefRecord[2];
             //}
 
             records[0] = this.createTextRecord(name, Locale.ENGLISH, true);
+            records[1] = this.createTextRecord(name, Locale.ENGLISH, true);
 
             NdefMessage message = new NdefMessage(records);
             Ndef ndef = Ndef.get(tag);
