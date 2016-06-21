@@ -58,15 +58,15 @@ public class LocationFragment extends Fragment {
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Location itemValue = (Location) listview.getItemAtPosition(position);
-                getActivity().setTitle(itemValue.name);
+                activity.location = (Location) listview.getItemAtPosition(position);
+                getActivity().setTitle(activity.location.name);
 
 
-                   // activity.sharedpreferences = activity.getSharedPreferences(activity.MyPREFERENCES, Context.MODE_PRIVATE);
+                // activity.sharedpreferences = activity.getSharedPreferences(activity.MyPREFERENCES, Context.MODE_PRIVATE);
 
                 Editor editor = activity.sharedpreferences.edit();
-                editor.putString(activity.NameKey, itemValue.name);
-                editor.putInt(activity.IdKey, itemValue.id);
+                editor.putString(activity.NameKey, activity.location.name);
+                editor.putInt(activity.IdKey, activity.location.id);
                 editor.apply();
 
 

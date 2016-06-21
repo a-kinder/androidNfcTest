@@ -51,9 +51,9 @@ public class MainActivity extends AppCompatActivity {
     private Intent ntnt;
     protected Tag tag;
     private NfcUtils nfcUtil = new NfcUtils();
-    String name;
-    Integer id;
+
     String uid;
+    Location location;
     ArrayList<String> currData = new ArrayList<String>();
     private final String[][] techList = new String[][]{
             new String[]{
@@ -107,9 +107,9 @@ public class MainActivity extends AppCompatActivity {
 
         viewPager.setCurrentItem(1);
 
-        name = sharedpreferences.getString(NameKey, "No Location Selected");
+        location.name = sharedpreferences.getString(NameKey, "No Location Selected");
 
-        setTitle(name);
+        setTitle(location.name);
 
     }
 
@@ -177,8 +177,9 @@ public class MainActivity extends AppCompatActivity {
     public void checkCreds() {
         if (tag != null) {
 
-            currData.addAll(nfcUtil.readTag(tag, ntnt));
-            if (currData.contains(name)) {
+//            currData.addAll(nfcUtil.readTag(tag, ntnt));
+            currData = nfcUtil.readTag(tag, ntnt);
+            if (currData.contains(location.name)) {
                 showToast(true);
             } else {
                 showToast(false);

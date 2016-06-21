@@ -64,7 +64,7 @@ NfcUtils nfcUtils = new NfcUtils();
         btnWrite.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(nfcUtils.writeTag(getActivity(), activity.tag, activity.currData, activity.name))
+                if(nfcUtils.writeTag(getActivity(), activity.tag, activity.currData, activity.location.name))
                 {
                     activity.showToast(true);
                 } else {activity.showToast(false);}
