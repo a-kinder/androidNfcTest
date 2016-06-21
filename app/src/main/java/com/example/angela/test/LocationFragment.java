@@ -1,6 +1,7 @@
 package com.example.angela.test;
 
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,7 +28,7 @@ public class LocationFragment extends Fragment {
     View fragmentView;
     ArrayAdapter<Location> myAdapter;
     MainActivity activity;
-    ArrayList<Location> locations = new ArrayList<Location>(Arrays.asList(new Location("VIP", 0), new Location("Front Gate", 1)));
+    ArrayList<Location> locations;// = new ArrayList<Location>(Arrays.asList(new Location("VIP", 0), new Location("Front Gate", 1)));
 
 
     public LocationFragment() {
@@ -46,23 +47,21 @@ public class LocationFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         activity = (MainActivity) getActivity();
+
+        DbHelper dbHelper = new DbHelper(activity);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        locations = dbHelper.getAllLocations();
+
         myAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, locations);
-
         fragmentView = inflater.inflate(R.layout.fragment_location, container, false);
-
-        // Inflate the layout for this fragment
         listview = (ListView) fragmentView.findViewById(R.id.listView);
         listview.setAdapter(myAdapter);
-
-
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 activity.location = (Location) listview.getItemAtPosition(position);
                 getActivity().setTitle(activity.location.name);
 
-
-                // activity.sharedpreferences = activity.getSharedPreferences(activity.MyPREFERENCES, Context.MODE_PRIVATE);
 
                 Editor editor = activity.sharedpreferences.edit();
                 editor.putString(activity.NameKey, activity.location.name);

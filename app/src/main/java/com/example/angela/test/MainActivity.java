@@ -13,28 +13,21 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.app.*;
 import android.content.*;
-import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.nfc.*;
 import android.nfc.tech.*;
-import android.os.*;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
 import android.view.*;
-import android.widget.*;
-import android.support.v4.widget.*;
+import android.database.sqlite.*;
 
-import java.util.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,17 +36,13 @@ public class MainActivity extends AppCompatActivity {
     private List<String> tabTitles = new ArrayList<>();
     MyPagerAdapter pagerAdapter;
     TabLayout tabLayout;
-    public static final String TAG = "NfcDemo";
-    public static final String MIME_TEXT_PLAIN = "text/plain";
     private NfcAdapter myNfcAdapter;
     private AlertDialog dialog;
-    private PendingIntent pendingIntent;
     private Intent ntnt;
     protected Tag tag;
     private NfcUtils nfcUtil = new NfcUtils();
-
     String uid;
-    Location location;
+    Location location = new Location();
     ArrayList<String> currData = new ArrayList<String>();
     private final String[][] techList = new String[][]{
             new String[]{
@@ -67,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
             }
     };
     public static final String MyPREFERENCES = "MyPrefs";
-     SharedPreferences sharedpreferences;
+    SharedPreferences sharedpreferences;
     public static final String NameKey = "nameKey";
     public static final String IdKey = "idKey";
 
@@ -78,41 +67,17 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
 
         myNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
-        fragmentList.add(LocationFragment.newInstance());
-        fragmentList.add(MainFragment.newInstance());
-        fragmentList.add(WriteFragment.newInstance());
-
-        tabTitles.add("Locations");
-        tabTitles.add("Scan");
-        tabTitles.add("Write");
-
-        // Set a toolbar which will replace the action bar.
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        // Setup the viewPager
-        viewPager = (ViewPager) findViewById(R.id.view_pager);
-        pagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
-        viewPager.setAdapter(pagerAdapter);
-
-        // Setup the Tabs
-        tabLayout = (TabLayout) findViewById(R.id.tab_layout);
-        // This method ensures that tab selection events update the ViewPager and page changes update the selected tab.
-        tabLayout.setupWithViewPager(viewPager);
-
-        viewPager.setCurrentItem(1);
+        createFragments();
 
         location.name = sharedpreferences.getString(NameKey, "No Location Selected");
 
         setTitle(location.name);
 
     }
-
 
     @Override
     protected void onResume() {
@@ -151,8 +116,7 @@ public class MainActivity extends AppCompatActivity {
         uid = this.ByteArrayToHexString(intent.getByteArrayExtra(NfcAdapter.EXTRA_ID));
         tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
         ntnt = intent;
-        if(viewPager.getCurrentItem() == 1)
-        {
+        if (viewPager.getCurrentItem() == 1) {
             checkCreds();
         }
     }
@@ -320,6 +284,31 @@ public class MainActivity extends AppCompatActivity {
         return out;
     }
 
+    public void createFragments() {
+        fragmentList.add(LocationFragment.newInstance());
+        fragmentList.add(MainFragment.newInstance());
+        fragmentList.add(WriteFragment.newInstance());
+
+        tabTitles.add("Locations");
+        tabTitles.add("Scan");
+        tabTitles.add("Write");
+
+        // Set a toolbar which will replace the action bar.
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        // Setup the viewPager
+        viewPager = (ViewPager) findViewById(R.id.view_pager);
+        pagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(pagerAdapter);
+
+        // Setup the Tabs
+        tabLayout = (TabLayout) findViewById(R.id.tab_layout);
+        // This method ensures that tab selection events update the ViewPager and page changes update the selected tab.
+        tabLayout.setupWithViewPager(viewPager);
+
+        viewPager.setCurrentItem(1);
+    }
 
     private class MyPagerAdapter extends FragmentStatePagerAdapter {
 
