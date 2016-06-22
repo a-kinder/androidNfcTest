@@ -47,8 +47,6 @@ public class MainFragment extends Fragment {
     private NfcUtils nfcUtil = new NfcUtils();
 
 
-
-
     public static MainFragment newInstance() {
         return new MainFragment();
     }

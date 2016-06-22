@@ -14,10 +14,12 @@ public class Location {
 
     public Location() {
     }
-
-    public Location(String name, int id) {
-        this.name = name;
+    public Location(int id, String name) {
         this.id = id;
+        this.name = name;
+    }
+    public Location(String name) {
+        this.name = name;
     }
 
     @Override

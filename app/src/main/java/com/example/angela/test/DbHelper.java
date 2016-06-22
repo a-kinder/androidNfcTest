@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.database.sqlite.*;
 import android.content.Context;
 
+import java.io.Console;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.zip.DataFormatException;
@@ -41,14 +42,12 @@ public class DbHelper extends SQLiteOpenHelper {
     public DbHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
 
-
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
 
-
-        //Inserts pre-defined departments
+        db.execSQL(DATABASE_CREATE);
     }
 
     @Override
@@ -60,14 +59,93 @@ public class DbHelper extends SQLiteOpenHelper {
 
     }
 
-    public void insertLocation(Location location) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(locName, location.getName()); // Shop Name
-        values.put(locId, location.getId()); // Shop Phone Number
-// Inserting Row
-        db.insert(locTableName, null, values);
-        db.close(); // Closing database connection
+    public boolean insertLocation(Location location) {
+        try {
+            SQLiteDatabase db = this.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put(locName, location.getName());
+            values.put(locId, location.getId());
+            db.insert(locTableName, null, values);
+
+            return true;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean insertTag(String uid) {
+        try {
+            if (getTag(uid) == null) {
+                SQLiteDatabase db = this.getWritableDatabase();
+
+                ContentValues values = new ContentValues();
+                values.put(tagUid, uid);
+                db.insert(locTableName, null, values);
+                db.close(); // Closing database connection
+            }
+            return true;
+        } catch (Exception e) {
+            System.out.println(e.getStackTrace());
+            return false;
+        }
+    }
+
+    public ArrayList<mTag> getAllTags() {
+        ArrayList<mTag> list = new ArrayList<mTag>();
+
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + locTableName;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        try {
+
+            Cursor cursor = db.rawQuery(selectQuery, null);
+            try {
+
+                // looping through all rows and adding to list
+                if (cursor.moveToFirst()) {
+                    do {
+                        mTag obj = new mTag();
+                        obj.setId(cursor.getInt(0));
+                        obj.setUid(cursor.getString(1));
+                        list.add(obj);
+                    } while (cursor.moveToNext());
+                }
+
+            } finally {
+                try {
+                    cursor.close();
+                } catch (Exception ignore) {
+                }
+            }
+
+        } finally {
+            try {
+                db.close();
+            } catch (Exception ignore) {
+            }
+        }
+
+        return list;
+    }
+
+    public mTag getTag(String uid) {
+        try {
+            SQLiteDatabase db = this.getReadableDatabase();
+            Cursor cursor = db.query(tagTableName, new String[]{tagId, tagUid}, tagUid + "=" + uid, new String[]{uid}, null, null, null, null);
+            //query(String table, String[] columns, String selection, String[] selectionArgs, String groupBy, String having, String orderBy, String limit)
+
+            if (cursor != null)
+                cursor.moveToFirst();
+            mTag tag = new mTag(Integer.parseInt(cursor.getString(0)), cursor.getString(1));
+            cursor.close();
+            return tag;
+        }catch(Exception e)
+        {
+            System.out.println(e.getMessage());
+            return null;
+        }
     }
 
     public Location getLocation(int id) {
@@ -77,12 +155,12 @@ public class DbHelper extends SQLiteOpenHelper {
                 new String[]{String.valueOf(id)}, null, null, null, null);
         if (cursor != null)
             cursor.moveToFirst();
-        Location contact = new Location(cursor.getString(1), (Integer.parseInt(cursor.getString(0))));
-// return shop
+        Location contact = new Location(Integer.parseInt(cursor.getString(0)),cursor.getString(1));
+        cursor.close();
         return contact;
     }
-    public ArrayList<Location> getAllLocations()
-    {
+
+    public ArrayList<Location> getAllLocations() {
         ArrayList<Location> list = new ArrayList<Location>();
 
         // Select All Query
@@ -90,6 +168,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getReadableDatabase();
         try {
+
 
             Cursor cursor = db.rawQuery(selectQuery, null);
             try {
@@ -105,13 +184,25 @@ public class DbHelper extends SQLiteOpenHelper {
                 }
 
             } finally {
-                try { cursor.close(); } catch (Exception ignore) {}
+                try {
+                    cursor.close();
+                } catch (Exception ignore) {
+                }
             }
 
         } finally {
-            try { db.close(); } catch (Exception ignore) {}
+            try {
+                db.close();
+            } catch (Exception ignore) {
+            }
         }
 
         return list;
+    }
+    public void seed()
+    {
+        insertLocation(new Location("Front Gate"));
+        insertLocation(new Location("VIP"));
+        insertLocation(new Location("Backstage"));
     }
 }

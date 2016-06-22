@@ -33,6 +33,7 @@ NfcUtils nfcUtils = new NfcUtils();
                     MifareUltralight.class.getName(), Ndef.class.getName()
             }
     };
+    DbHelper dbHelper = new DbHelper(activity);
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
@@ -64,7 +65,8 @@ NfcUtils nfcUtils = new NfcUtils();
         btnWrite.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(nfcUtils.writeTag(getActivity(), activity.tag, activity.currData, activity.location.name))
+                //if(nfcUtils.writeTag(getActivity(), activity.tag, activity.currData, activity.location.name))
+                if(dbHelper.insertTag(activity.uid))
                 {
                     activity.showToast(true);
                 } else {activity.showToast(false);}

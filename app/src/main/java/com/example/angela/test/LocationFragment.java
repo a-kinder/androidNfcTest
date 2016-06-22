@@ -50,6 +50,7 @@ public class LocationFragment extends Fragment {
 
         DbHelper dbHelper = new DbHelper(activity);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
+
         locations = dbHelper.getAllLocations();
 
         myAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, locations);
