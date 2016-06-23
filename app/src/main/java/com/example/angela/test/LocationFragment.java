@@ -48,10 +48,9 @@ public class LocationFragment extends Fragment {
 
         activity = (MainActivity) getActivity();
 
-        DbHelper dbHelper = new DbHelper(activity);
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        DbAccess dbAccess = new DbAccess(this.getActivity().getBaseContext());
 
-        locations = dbHelper.getAllLocations();
+        locations = dbAccess.getAllLocations();
 
         myAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, locations);
         fragmentView = inflater.inflate(R.layout.fragment_location, container, false);

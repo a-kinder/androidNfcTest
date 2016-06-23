@@ -14,7 +14,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.zip.DataFormatException;
 
-public class DbHelper extends SQLiteOpenHelper {
+public class DbAccess {
     static final String tagTableName = "tags";
     static final String tagId = "id";
     static final String tagUid = "uid";
@@ -23,45 +23,33 @@ public class DbHelper extends SQLiteOpenHelper {
     static final String locId = "id";
     static final String locName = "name";
 
-
     public static final String DATABASE_NAME = "NfcDb.db";
     private static final int DATABASE_VERSION = 1;
-    private static final String DATABASE_CREATE =
+    private static final String CREATE_TAG_TABLE =
             "CREATE TABLE " + tagTableName + " (" +
                     tagId + " INTEGER PRIMARY KEY , " +
                     tagUid + " INTEGER," +
-                    tagName + " TEXT);" +
-                    "CREATE TABLE " + locTableName + " (" +
+                    tagName + " TEXT);";
+    private static final String CREATE_LOCATION_TABLE =
+            "CREATE TABLE " + locTableName + " (" +
                     locId + " INTEGER PRIMARY KEY , " +
-                    locName + " TEXT);" +
-                    "CREATE TABLE " + locTableName + tagTableName + " (" +
+                    locName + " TEXT);";
+    private static final String CREATE_LOCATIONTAG_TABLE =
+            "CREATE TABLE " + locTableName + tagTableName + " (" +
                     "locId INTEGER REFERENCES locations(id), " +
                     "tagId INTEGER REFERENCES locations(id));";
     private SQLiteDatabase db;
+    DbHelper dbHelper;
 
-    public DbHelper(Context context) {
-        super(context, DATABASE_NAME, null, 1);
-
-    }
-
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-
-        db.execSQL(DATABASE_CREATE);
-    }
-
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + tagTableName);
-        db.execSQL("DROP TABLE IF EXISTS " + locTableName);
-        db.execSQL("DROP TABLE IF EXISTS " + locTableName + tagTableName);
-        onCreate(db);
+    public DbAccess(Context context) {
+        dbHelper = new DbHelper(context);
+        db = dbHelper.getWritableDatabase();
 
     }
 
     public boolean insertLocation(Location location) {
         try {
-            SQLiteDatabase db = this.getWritableDatabase();
+            //  SQLiteatabase db = this.getWritableDatabase();
             ContentValues values = new ContentValues();
             values.put(locName, location.getName());
             values.put(locId, location.getId());
@@ -77,12 +65,12 @@ public class DbHelper extends SQLiteOpenHelper {
     public boolean insertTag(String uid) {
         try {
             if (getTag(uid) == null) {
-                SQLiteDatabase db = this.getWritableDatabase();
+                //  db = this.getWritableDatabase();
 
                 ContentValues values = new ContentValues();
                 values.put(tagUid, uid);
-                db.insert(locTableName, null, values);
-                db.close(); // Closing database connection
+                db.insert(tagTableName, null, values);
+                //  db.close(); // Closing database connection
             }
             return true;
         } catch (Exception e) {
@@ -97,7 +85,7 @@ public class DbHelper extends SQLiteOpenHelper {
         // Select All Query
         String selectQuery = "SELECT  * FROM " + locTableName;
 
-        SQLiteDatabase db = this.getReadableDatabase();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
         try {
 
             Cursor cursor = db.rawQuery(selectQuery, null);
@@ -132,7 +120,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     public mTag getTag(String uid) {
         try {
-            SQLiteDatabase db = this.getReadableDatabase();
+            openDb();
             Cursor cursor = db.query(tagTableName, new String[]{tagId, tagUid}, tagUid + "=" + uid, new String[]{uid}, null, null, null, null);
             //query(String table, String[] columns, String selection, String[] selectionArgs, String groupBy, String having, String orderBy, String limit)
 
@@ -141,21 +129,20 @@ public class DbHelper extends SQLiteOpenHelper {
             mTag tag = new mTag(Integer.parseInt(cursor.getString(0)), cursor.getString(1));
             cursor.close();
             return tag;
-        }catch(Exception e)
-        {
+        } catch (Exception e) {
             System.out.println(e.getMessage());
             return null;
         }
     }
 
     public Location getLocation(int id) {
-        SQLiteDatabase db = this.getReadableDatabase();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = db.query(locTableName, new String[]{locId,
                         locName}, locId + "=?",
                 new String[]{String.valueOf(id)}, null, null, null, null);
         if (cursor != null)
             cursor.moveToFirst();
-        Location contact = new Location(Integer.parseInt(cursor.getString(0)),cursor.getString(1));
+        Location contact = new Location(Integer.parseInt(cursor.getString(0)), cursor.getString(1));
         cursor.close();
         return contact;
     }
@@ -166,9 +153,10 @@ public class DbHelper extends SQLiteOpenHelper {
         // Select All Query
         String selectQuery = "SELECT  * FROM " + locTableName;
 
-        SQLiteDatabase db = this.getReadableDatabase();
+//        SQLiteDatabase db = this.getReadableDatabase();
         try {
 
+            openDb();
 
             Cursor cursor = db.rawQuery(selectQuery, null);
             try {
@@ -192,17 +180,53 @@ public class DbHelper extends SQLiteOpenHelper {
 
         } finally {
             try {
-                db.close();
+                // db.close();
             } catch (Exception ignore) {
             }
         }
 
         return list;
     }
-    public void seed()
-    {
-        insertLocation(new Location("Front Gate"));
-        insertLocation(new Location("VIP"));
-        insertLocation(new Location("Backstage"));
+
+    public void seed() {
+        insertLocation(new Location(0, "Front Gate"));
+        insertLocation(new Location(1, "VIP"));
+        insertLocation(new Location(2, "Backstage"));
+    }
+
+    public void openDb() {
+        if (db == null) {
+            db = dbHelper.getWritableDatabase();
+        }
+    }
+
+    public void closeDb() {
+        db.close();
+    }
+
+    public class DbHelper extends SQLiteOpenHelper {
+
+        public DbHelper(Context context) {
+            super(context, DATABASE_NAME, null, 1);
+
+        }
+
+        @Override
+        public void onCreate(SQLiteDatabase db) {
+
+            db.execSQL(CREATE_LOCATION_TABLE);
+            db.execSQL(CREATE_TAG_TABLE);
+            db.execSQL(CREATE_LOCATIONTAG_TABLE);
+        }
+
+        @Override
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+            db.execSQL("DROP TABLE IF EXISTS " + tagTableName);
+            db.execSQL("DROP TABLE IF EXISTS " + locTableName);
+            db.execSQL("DROP TABLE IF EXISTS " + locTableName + tagTableName);
+            onCreate(db);
+
+        }
+
     }
 }

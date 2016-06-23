@@ -2,6 +2,7 @@ package com.example.angela.test;
 
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
@@ -26,8 +27,6 @@ import android.nfc.tech.*;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
 import android.view.*;
-import android.database.sqlite.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,13 +58,13 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences sharedpreferences;
     public static final String NameKey = "nameKey";
     public static final String IdKey = "idKey";
-
     ViewPager viewPager;
-
+DbAccess dbAccess;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
 
@@ -77,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
         setTitle(location.name);
 
+        dbAccess = new DbAccess(this.getBaseContext());
     }
 
     @Override
@@ -136,6 +136,11 @@ public class MainActivity extends AppCompatActivity {
         if (dialog != null) {
             dialog.dismiss();
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
     }
 
     public void checkCreds() {
