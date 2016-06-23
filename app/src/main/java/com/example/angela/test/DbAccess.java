@@ -28,7 +28,7 @@ public class DbAccess {
     private static final String CREATE_TAG_TABLE =
             "CREATE TABLE " + tagTableName + " (" +
                     tagId + " INTEGER PRIMARY KEY , " +
-                    tagUid + " INTEGER," +
+                    tagUid + " TEXT," +
                     tagName + " TEXT);";
     private static final String CREATE_LOCATION_TABLE =
             "CREATE TABLE " + locTableName + " (" +
@@ -78,12 +78,50 @@ public class DbAccess {
             return false;
         }
     }
+public boolean checkUid(String uid)
+{
+    ArrayList<mTag> list = new ArrayList<mTag>();
 
+    // Select All Query
+    String selectQuery = "SELECT  * FROM " + tagTableName;
+
+    SQLiteDatabase db = dbHelper.getReadableDatabase();
+    try {
+
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        try {
+
+            // looping through all rows and adding to list
+            if (cursor.moveToFirst()) {
+                do {
+                    String s = cursor.getString(1);
+                   if(s.equals(uid))
+                   {
+                       return true;
+                   }
+                } while (cursor.moveToNext());
+            }
+
+        } finally {
+            try {
+                cursor.close();
+            } catch (Exception ignore) {
+            }
+        }
+
+    } finally {
+        try {
+            db.close();
+        } catch (Exception ignore) {
+        }
+    }
+return false;
+}
     public ArrayList<mTag> getAllTags() {
         ArrayList<mTag> list = new ArrayList<mTag>();
 
         // Select All Query
-        String selectQuery = "SELECT  * FROM " + locTableName;
+        String selectQuery = "SELECT  * FROM " + tagTableName;
 
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         try {

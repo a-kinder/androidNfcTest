@@ -144,20 +144,28 @@ DbAccess dbAccess;
     }
 
     public void checkCreds() {
-        if (tag != null) {
 
-//            currData.addAll(nfcUtil.readTag(tag, ntnt));
-            currData = nfcUtil.readTag(tag, ntnt);
-            if (currData.contains(location.name)) {
-                showToast(true);
-            } else {
-                showToast(false);
-            }
+        if(dbAccess.checkUid(uid))
+        {
+            showToast(true);
+        }else{showToast(false);}
 
-        } else {
-            showToast(false);
-        }
-        tag = null;
+//        if (tag != null) {
+//
+////            currData.addAll(nfcUtil.readTag(tag, ntnt));
+//            currData = nfcUtil.readTag(tag, ntnt);
+//            if (currData.contains(location.name)) {
+//                showToast(true);
+//            } else {
+//                showToast(false);
+//            }
+//
+//        } else {
+//            showToast(false);
+//        }
+//        tag = null;
+
+
     }
 
     public boolean checkNfcAdapter() {
