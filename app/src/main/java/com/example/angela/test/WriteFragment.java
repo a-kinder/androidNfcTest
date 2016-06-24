@@ -78,4 +78,5 @@ public class WriteFragment extends Fragment {
 
 
     }
+
 }
