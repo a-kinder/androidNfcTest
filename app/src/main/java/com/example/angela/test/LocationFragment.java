@@ -13,6 +13,7 @@ import android.widget.ListView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.RunnableFuture;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -58,15 +59,23 @@ public class LocationFragment extends Fragment {
         listview.setAdapter(myAdapter);
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                activity.location = (Location) listview.getItemAtPosition(position);
-                getActivity().setTitle(activity.location.name);
+            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+
+                final Location location =(Location) listview.getItemAtPosition(position);
+                Runnable block = new Runnable() {
+                    @Override
+                    public void run() {
+                        activity.location = location;
+                        getActivity().setTitle(activity.location.name);
 
 
-                Editor editor = activity.sharedpreferences.edit();
-                editor.putString(activity.NameKey, activity.location.name);
-                editor.putInt(activity.IdKey, activity.location.id);
-                editor.apply();
+                        Editor editor = activity.sharedpreferences.edit();
+                        editor.putString(activity.NameKey, activity.location.name);
+                        editor.putInt(activity.IdKey, activity.location.id);
+                        editor.apply();
+                    }
+                };
+                activity.createDialog(activity, "Changing Location", location.name.toUpperCase(), block).show();
 
 
             }

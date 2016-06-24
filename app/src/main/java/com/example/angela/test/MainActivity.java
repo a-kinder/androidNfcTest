@@ -27,6 +27,7 @@ import android.nfc.tech.*;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
 import android.view.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,7 +60,10 @@ public class MainActivity extends AppCompatActivity {
     public static final String NameKey = "nameKey";
     public static final String IdKey = "idKey";
     ViewPager viewPager;
-DbAccess dbAccess;
+    DbAccess dbAccess;
+
+    //TODO: add different location credentials
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -145,26 +149,17 @@ DbAccess dbAccess;
 
     public void checkCreds() {
 
-        if(dbAccess.checkUid(uid))
-        {
-            showToast(true);
-        }else{showToast(false);}
+        if (tag != null) {
 
-//        if (tag != null) {
-//
-////            currData.addAll(nfcUtil.readTag(tag, ntnt));
-//            currData = nfcUtil.readTag(tag, ntnt);
-//            if (currData.contains(location.name)) {
-//                showToast(true);
-//            } else {
-//                showToast(false);
-//            }
-//
-//        } else {
-//            showToast(false);
-//        }
-//        tag = null;
-
+            if (dbAccess.checkUid(uid)) {
+                showToast(true);
+            } else {
+                showToast(false);
+            }
+        } else {
+            showToast(false);
+        }
+        tag = null;
 
     }
 

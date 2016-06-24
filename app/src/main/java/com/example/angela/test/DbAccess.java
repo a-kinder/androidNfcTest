@@ -22,22 +22,26 @@ public class DbAccess {
     static final String locTableName = "locations";
     static final String locId = "id";
     static final String locName = "name";
+    static final String locTagTableName =locTableName + tagTableName;
+    static final String ltTagId = "tagId";
+    static final String ltLocId = "locId";
+
+
 
     public static final String DATABASE_NAME = "NfcDb.db";
     private static final int DATABASE_VERSION = 1;
     private static final String CREATE_TAG_TABLE =
             "CREATE TABLE " + tagTableName + " (" +
                     tagId + " INTEGER PRIMARY KEY , " +
-                    tagUid + " TEXT," +
-                    tagName + " TEXT);";
+                    tagUid + " TEXT);";
     private static final String CREATE_LOCATION_TABLE =
             "CREATE TABLE " + locTableName + " (" +
                     locId + " INTEGER PRIMARY KEY , " +
                     locName + " TEXT);";
     private static final String CREATE_LOCATIONTAG_TABLE =
-            "CREATE TABLE " + locTableName + tagTableName + " (" +
-                    "locId INTEGER REFERENCES locations(id), " +
-                    "tagId INTEGER REFERENCES locations(id));";
+            "CREATE TABLE " + locTagTableName + " (" +
+                    ltLocId + " INTEGER REFERENCES locations(id), " +
+                    ltTagId + " INTEGER REFERENCES tags(id));";
     private SQLiteDatabase db;
     DbHelper dbHelper;
 
@@ -97,6 +101,10 @@ public boolean checkUid(String uid)
                     String s = cursor.getString(1);
                    if(s.equals(uid))
                    {
+                       try {
+                           cursor.close();
+                       } catch (Exception ignore) {
+                       }
                        return true;
                    }
                 } while (cursor.moveToNext());
@@ -240,6 +248,22 @@ return false;
 
     public void closeDb() {
         db.close();
+    }
+
+    public boolean addLocationToTag(int locationId, String tagUid)
+    {
+        try {
+            //  SQLiteatabase db = this.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put(ltTagId, tagUid);
+            values.put(ltLocId, locationId);
+            db.insert(locTagTableName, null, values);
+
+            return true;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return false;
     }
 
     public class DbHelper extends SQLiteOpenHelper {
