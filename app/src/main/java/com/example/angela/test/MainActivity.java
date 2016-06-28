@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
     TabLayout tabLayout;
     private NfcAdapter myNfcAdapter;
     private AlertDialog dialog;
-    private Intent ntnt;
+    protected Intent ntnt;
     protected Tag tag;
     private NfcUtils nfcUtil = new NfcUtils();
     String uid;

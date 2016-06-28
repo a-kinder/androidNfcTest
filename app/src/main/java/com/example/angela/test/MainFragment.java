@@ -210,15 +210,15 @@ public class MainFragment extends Fragment {
                         JSONObject jsonChildNode = jsonMainNode.getJSONObject(i);
 
                         /******* Fetch node values **********/
-                        String name = jsonChildNode.optString("name").toString();
+                        String name = jsonChildNode.optString("name").toString();//uses hash values
                         String number = jsonChildNode.optString("number").toString();
                         String date_added = jsonChildNode.optString("date_added").toString();
 
 
-                        OutputData += " Name: " + name + " "
-                                + "Number: " + number + " "
-                                + "Time                : " + date_added + " "
-                                + "-------------------------------------------------- ";
+                        OutputData += " Name: " + name + "\n"
+                                + "Number: " + number + "\n"
+                                + "Time: " + date_added
+                                + "\n";
 
 
                     }

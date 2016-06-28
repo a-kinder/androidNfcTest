@@ -18,7 +18,9 @@ import android.widget.*;
 import java.util.ArrayList;
 
 public class WriteFragment extends Fragment {
+    Button btnCheck;
     Button btnWrite;
+    Button btnRead;
     View fragmentView;
     NfcUtils nfcUtils = new NfcUtils();
     MainActivity activity;
@@ -62,12 +64,40 @@ public class WriteFragment extends Fragment {
         // Inflate the layout for this fragment
         final DbAccess dbAccess = new DbAccess(activity.getBaseContext());
 
-        btnWrite = (Button) fragmentView.findViewById(R.id.btnWrite);
-        btnWrite.setOnClickListener(new View.OnClickListener() {
+        btnCheck = (Button) fragmentView.findViewById(R.id.btnCheck);
+        btnCheck.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //if(nfcUtils.writeTag(getActivity(), activity.tag, activity.currData, activity.location.name))
                 if (dbAccess.insertTag(activity.uid)) {
+                    activity.showToast(true);
+                } else {
+                    activity.showToast(false);
+                }
+            }
+        });
+
+
+        btnRead = (Button) fragmentView.findViewById(R.id.btnRead);
+        btnRead.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //if(nfcUtils.writeTag(getActivity(), activity.tag, activity.currData, activity.location.name))
+               ArrayList<String> al = nfcUtils.readTag(activity.tag, activity.ntnt);
+                if (!al.isEmpty()) {
+                    activity.createDialog(activity, "Tag Contents", al.get(0), null).show();
+                } else {
+                    activity.showToast(false);
+                }
+            }
+        });
+
+
+        btnWrite = (Button) fragmentView.findViewById(R.id.btnWrite);
+        btnWrite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (nfcUtils.writeTag(activity, activity.tag, activity.currData, activity.location.name)) {
                     activity.showToast(true);
                 } else {
                     activity.showToast(false);
