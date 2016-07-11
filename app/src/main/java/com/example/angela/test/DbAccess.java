@@ -68,7 +68,7 @@ public class DbAccess {
 
     public boolean insertTag(String uid) {
         try {
-            if (getTag(uid) == null) {
+            if (getTag(uid) == null) {//tag not in database
                 //  db = this.getWritableDatabase();
 
                 ContentValues values = new ContentValues();

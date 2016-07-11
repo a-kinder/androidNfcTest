@@ -84,10 +84,10 @@ public class WriteFragment extends Fragment {
             public void onClick(View v) {
                 //if(nfcUtils.writeTag(getActivity(), activity.tag, activity.currData, activity.location.name))
                ArrayList<String> al = nfcUtils.readTag(activity.tag, activity.ntnt);
-                if (!al.isEmpty()) {
-                    activity.createDialog(activity, "Tag Contents", al.get(0), null).show();
-                } else {
+                if (al == null) {
                     activity.showToast(false);
+                } else {
+                    activity.createDialog(activity.getApplicationContext(), "Tag Contents", al.get(0), null).show();
                 }
             }
         });
@@ -97,7 +97,10 @@ public class WriteFragment extends Fragment {
         btnWrite.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (nfcUtils.writeTag(activity, activity.tag, activity.currData, activity.location.name)) {
+                ArrayList<String> al = new ArrayList<String>();
+                al.add("some datadfghdfgdfgdfg");
+
+                if (nfcUtils.writeTag(activity.getApplicationContext(), activity.tag, al, activity.location.name)) {
                     activity.showToast(true);
                 } else {
                     activity.showToast(false);

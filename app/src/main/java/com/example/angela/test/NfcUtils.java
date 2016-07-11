@@ -14,14 +14,20 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Locale;
+
+import javax.crypto.SecretKey;
 
 /**
  * Created by angela on 2016-06-17.
  */
 public class NfcUtils {
+    protected EncryptionHelper encryption = new EncryptionHelper();
+
     public NdefRecord createTextRecord(String payload, Locale locale, boolean encodeInUtf8) {
         byte[] langBytes = locale.getLanguage().getBytes(Charset.forName("US-ASCII"));
         Charset utfEncoding = encodeInUtf8 ? Charset.forName("UTF-8") : Charset.forName("UTF-16");
@@ -36,22 +42,33 @@ public class NfcUtils {
         return record;
     }
 
+    public NdefRecord createTextRecord(byte[] payload, Locale locale, boolean encodeInUtf8) {
+        byte[] langBytes = locale.getLanguage().getBytes(Charset.forName("US-ASCII"));
+        Charset utfEncoding = encodeInUtf8 ? Charset.forName("UTF-8") : Charset.forName("UTF-16");
+        int utfBit = encodeInUtf8 ? 0 : (1 << 7);
+        char status = (char) (utfBit + langBytes.length);
+        byte[] data = new byte[1 + langBytes.length + payload.length];
+        data[0] = (byte) status;
+        System.arraycopy(langBytes, 0, data, 1, langBytes.length);//copies array: original array, start position, dest array, end position, length
+        System.arraycopy(payload, 0, data, 1 + langBytes.length, payload.length);
+        NdefRecord record = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, "application/vnd.angela.locations".getBytes(), new byte[0], data);
+        return record;
+    }
+
     public boolean writeTag(Context context, Tag tag, ArrayList<String> data, String name) {
         try {
             NdefRecord[] records;
-//            if (!currData.isEmpty()) {
-//                int size = currData.size() + 1;
-//                records = new NdefRecord[size];
-//
-//                for (int i = 1; i < size + 1; i++) {
-//                    records[i] = createTextRecord(data.get(i - 1), Locale.ENGLISH, true);
-//                }
-//            } else {
-            records = new NdefRecord[2];
+            int size = data.size();
+
+            records = new NdefRecord[size];
             //}
 
-            records[0] = this.createTextRecord(name, Locale.ENGLISH, true);
-            records[1] = this.createTextRecord(name, Locale.ENGLISH, true);
+            for (int i = 0; i < data.size(); i++) {
+                byte[] text = encryption.encrypt(data.get(i));
+
+                records[i] = this.createTextRecord(text, Locale.ENGLISH, true);
+
+            }
 
             NdefMessage message = new NdefMessage(records);
             Ndef ndef = Ndef.get(tag);
@@ -61,21 +78,26 @@ public class NfcUtils {
             ndef.close();
             return true;
         } catch (UnsupportedEncodingException u) {
-            Log.w("UnsupportedEncoding", u.getMessage());
+            Log.w("UnsupportedEncoding", "message:" + u.getMessage());
+            return false;
         } catch (IOException i) {
-            Log.w("IOException", i.getMessage());
+            Log.w("IOException", "message:" + i.getMessage());
+            System.out.println(i.toString());
+            return false;
         } catch (FormatException f) {
-            Log.w("FormatException", f.getMessage());
+            Log.w("FormatException", "message:" + f.getMessage());
+            return false;
         } catch (Exception e) {
-            Log.w("Unknown Exception", e.getMessage());
+            Log.w("Unknown Exception", "message:" + e.getMessage());
+            return false;
         }
 
-        return false;
+
     }
 
     public ArrayList<String> readTag(Tag tag, Intent intent) {
         ArrayList<String> data = new ArrayList<String>();
-
+//
 
         if (tag != null) {
 
@@ -103,10 +125,15 @@ public class NfcUtils {
                     String languageCode = new String(payload, 1, languageCodeLength, "US-ASCII");
 
                     //Get the Text
-                    String text = new String(payload, languageCodeLength + 1, payload.length - languageCodeLength - 1, textEncoding);
+                   // String text = new String(payload, languageCodeLength + 1, payload.length - languageCodeLength - 1, textEncoding);
+                    byte[] b= Arrays.copyOfRange(payload, languageCodeLength + 1, payload.length - languageCodeLength - 1);
 
 
-                    data.add(text);
+                    // data.add("text: " + encryption.d(text.getBytes()));
+
+                    String decryptedText = encryption.decrypt(b);
+
+                    data.add(decryptedText);
 
                 }
                 if (data.isEmpty()) {
@@ -117,6 +144,8 @@ public class NfcUtils {
 
 
             } catch (Exception e) {
+                Log.w("Exception", "message:" + e.getMessage());
+
                 data = null;
             }
         }

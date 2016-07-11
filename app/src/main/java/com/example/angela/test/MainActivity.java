@@ -82,10 +82,9 @@ public class MainActivity extends AppCompatActivity {
     public static final String IdKey = "idKey";
     ViewPager viewPager;
     DbAccess dbAccess;
-
+protected EncryptionHelper encryption = new EncryptionHelper();
     //TODO: add different location credentials
-
-    @Override
+     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -139,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onNewIntent(Intent intent) {
 
-        uid = this.ByteArrayToHexString(intent.getByteArrayExtra(NfcAdapter.EXTRA_ID));
+        uid = encryption.bytesToHex(intent.getByteArrayExtra(NfcAdapter.EXTRA_ID));
         tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
         ntnt = intent;
         if (viewPager.getCurrentItem() == 1) {
@@ -300,19 +299,6 @@ public class MainActivity extends AppCompatActivity {
         return builder.create();
     }
 
-    private String ByteArrayToHexString(byte[] inarray) {
-        int i, j, in;
-        String[] hex = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"};
-        String out = "";
-        for (j = 0; j < inarray.length; ++j) {
-            in = (int) inarray[j] & 0xff;
-            i = (in >> 4) & 0x0f;
-            out += hex[i];
-            i = in & 0x0f;
-            out += hex[i];
-        }
-        return out;
-    }
 
     public void createFragments() {
         fragmentList.add(LocationFragment.newInstance());

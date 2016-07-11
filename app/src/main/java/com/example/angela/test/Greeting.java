@@ -3,7 +3,7 @@ package com.example.angela.test;
 /**
 REST web service test model
  */
-public class Greeting {
+public class Greeting   {
     private String id;
     private String content;
 

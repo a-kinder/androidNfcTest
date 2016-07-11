@@ -5,28 +5,32 @@
     android:layout_height="match_parent">
 
     <Button
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:text="write UID to DB"
         android:id="@+id/btnCheck"
+        android:layout_width="200dp"
+        android:layout_height="80dp"
+        android:text="write UID to DB"
         android:layout_marginTop="78dp"
         android:layout_alignParentTop="true"
-        android:layout_alignLeft="@+id/btnWrite"
-        android:layout_alignStart="@+id/btnWrite" />
+        android:layout_centerHorizontal="true" />
 
     <Button
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:text="Read"
         android:id="@+id/btnRead"
-        android:layout_above="@+id/btnWrite"
-        android:layout_centerHorizontal="true" />
+        android:layout_marginTop="78dp"
+        android:layout_width="200dp"
+        android:layout_height="80dp"
+        android:layout_alignLeft="@+id/btnCheck"
+        android:layout_alignStart="@+id/btnCheck"
+        android:text="Read"
+        android:layout_below="@+id/btnCheck"
+ />
 
     <Button
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:text="Write"
         android:id="@+id/btnWrite"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_below="@+id/btnRead"
+
+        android:layout_width="200dp"
+        android:layout_height="80dp"
+        android:layout_alignLeft="@+id/btnCheck"
+        android:layout_alignStart="@+id/btnCheck"
+        android:text="Write" />
 </RelativeLayout>

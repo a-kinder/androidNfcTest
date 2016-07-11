@@ -1,59 +1,78 @@
 package com.example.angela.test;
 
-import android.graphics.Bitmap;
+import android.util.Log;
 
-import java.io.ByteArrayOutputStream;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
+import javax.crypto.SecretKey;
+
+import android.util.Base64;
+
+import org.cryptonode.jncryptor.*;
+import org.cryptonode.jncryptor.AES256JNCryptor;
+import org.cryptonode.jncryptor.CryptorException;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
+//import javax.xml.bind.DatatypeConverter;
 
 /**
  * Created by angela on 2016-06-23.
  */
 public class EncryptionHelper {
-    private static byte[] encrypt(byte[] raw, byte[] clear) throws Exception {
-        SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
-        Cipher cipher = Cipher.getInstance("AES");
-        cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
-        byte[] encrypted = cipher.doFinal(clear);
-        return encrypted;
-    }
 
-    private static byte[] decrypt(byte[] raw, byte[] encrypted) throws Exception {
-        SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
-        Cipher cipher = Cipher.getInstance("AES");
-        cipher.init(Cipher.DECRYPT_MODE, skeySpec);
-        byte[] decrypted = cipher.doFinal(encrypted);
-        return decrypted;
-    }
+public byte[] encrypt(String text)
+{
+    JNCryptor cryptor = new AES256JNCryptor();
+    byte[] plaintext = text.getBytes();
+    String password = "secretsquirrel";
 
-    public void invoke(String data) {
+    try {
+        byte[] ciphertext = cryptor.encryptData(plaintext, password.toCharArray());
+        return ciphertext;
+    } catch (CryptorException e) {
+        // Something went wrong
+        e.printStackTrace();
+    }
+    return null;
+}
+
+    public String decrypt(byte[] plaintext)
+    {
+        JNCryptor cryptor = new AES256JNCryptor();
+        //byte[] plaintext = hexToBytes(hex);
+        String password = "secretsquirrel";
+
         try {
-            byte[] b = data.getBytes();
-
-            byte[] keyStart = "this is a key".getBytes();//is this a salt?
-            KeyGenerator kgen = KeyGenerator.getInstance("AES");
-            SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
-            sr.setSeed(keyStart);
-            kgen.init(128, sr); // 192 and 256 bits may not be available
-            SecretKey skey = kgen.generateKey();
-            byte[] key = skey.getEncoded();
-
-            // encrypt
-            byte[] encryptedData = encrypt(key, b);//raw, clear
-            // decrypt
-            byte[] decryptedData = decrypt(key, encryptedData);//raw, encrypted
-        } catch (NoSuchAlgorithmException a) {
-            System.out.println("No Such Algorithm Exception");
-            System.out.println(a.getMessage());
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-
+            byte[] ciphertext = cryptor.decryptData(plaintext, password.toCharArray());
+            return new String(ciphertext);
+        } catch (CryptorException e) {
+            // Something went wrong
+            e.printStackTrace();
         }
+        return null;
     }
+    public static byte[] hexToBytes(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
+    }
+    public String bytesToHex(byte[] inarray) {
+        int i, j, in;
+        String[] hex = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"};
+        String out = "";
+        for (j = 0; j < inarray.length; ++j) {
+            in = (int) inarray[j] & 0xff;
+            i = (in >> 4) & 0x0f;
+            out += hex[i];
+            i = in & 0x0f;
+            out += hex[i];
+        }
+        return out;
+    }
+
 
 }
