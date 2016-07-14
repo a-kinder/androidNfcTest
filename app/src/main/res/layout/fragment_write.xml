@@ -18,19 +18,15 @@
         android:layout_marginTop="78dp"
         android:layout_width="200dp"
         android:layout_height="80dp"
-        android:layout_alignLeft="@+id/btnCheck"
         android:layout_alignStart="@+id/btnCheck"
         android:text="Read"
-        android:layout_below="@+id/btnCheck"
- />
+        android:layout_below="@+id/btnCheck" />
 
     <Button
         android:id="@+id/btnWrite"
         android:layout_below="@+id/btnRead"
-
         android:layout_width="200dp"
         android:layout_height="80dp"
-        android:layout_alignLeft="@+id/btnCheck"
         android:layout_alignStart="@+id/btnCheck"
         android:text="Write" />
 </RelativeLayout>

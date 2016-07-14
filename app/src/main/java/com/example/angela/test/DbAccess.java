@@ -8,12 +8,15 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.*;
 import android.content.Context;
+import android.util.Log;
 
 import java.io.Console;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.zip.DataFormatException;
-
+import javax.xml.validation.Schema;
+import javax.xml.validation.Schema;
+import org.greenrobot.greendao.*;
 public class DbAccess {
     static final String tagTableName = "tags";
     static final String tagId = "id";
@@ -22,10 +25,9 @@ public class DbAccess {
     static final String locTableName = "locations";
     static final String locId = "id";
     static final String locName = "name";
-    static final String locTagTableName =locTableName + tagTableName;
+    static final String locTagTableName = locTableName + tagTableName;
     static final String ltTagId = "tagId";
     static final String ltLocId = "locId";
-
 
 
     public static final String DATABASE_NAME = "NfcDb.db";
@@ -82,49 +84,49 @@ public class DbAccess {
             return false;
         }
     }
-public boolean checkUid(String uid)
-{
-    ArrayList<mTag> list = new ArrayList<mTag>();
 
-    // Select All Query
-    String selectQuery = "SELECT  * FROM " + tagTableName;
+    public boolean checkUid(String uid) {
+        ArrayList<mTag> list = new ArrayList<mTag>();
 
-    SQLiteDatabase db = dbHelper.getReadableDatabase();
-    try {
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + tagTableName;
 
-        Cursor cursor = db.rawQuery(selectQuery, null);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
         try {
 
-            // looping through all rows and adding to list
-            if (cursor.moveToFirst()) {
-                do {
-                    String s = cursor.getString(1);
-                   if(s.equals(uid))
-                   {
-                       try {
-                           cursor.close();
-                       } catch (Exception ignore) {
-                       }
-                       return true;
-                   }
-                } while (cursor.moveToNext());
+            Cursor cursor = db.rawQuery(selectQuery, null);
+            try {
+
+                // looping through all rows and adding to list
+                if (cursor.moveToFirst()) {
+                    do {
+                        String s = cursor.getString(1);
+                        if (s.equals(uid)) {
+                            try {
+                                cursor.close();
+                            } catch (Exception ignore) {
+                            }
+                            return true;
+                        }
+                    } while (cursor.moveToNext());
+                }
+
+            } finally {
+                try {
+                    cursor.close();
+                } catch (Exception ignore) {
+                }
             }
 
         } finally {
             try {
-                cursor.close();
+                db.close();
             } catch (Exception ignore) {
             }
         }
-
-    } finally {
-        try {
-            db.close();
-        } catch (Exception ignore) {
-        }
+        return false;
     }
-return false;
-}
+
     public ArrayList<mTag> getAllTags() {
         ArrayList<mTag> list = new ArrayList<mTag>();
 
@@ -224,12 +226,9 @@ return false;
                 }
             }
 
-        } finally {
-            try {
-                // db.close();
-            } catch (Exception ignore) {
-            }
+        } catch (Exception ignore) {
         }
+
 
         return list;
     }
@@ -250,8 +249,7 @@ return false;
         db.close();
     }
 
-    public boolean addLocationToTag(int locationId, String tagUid)
-    {
+    public boolean addLocationToTag(int locationId, String tagUid) {
         try {
             //  SQLiteatabase db = this.getWritableDatabase();
             ContentValues values = new ContentValues();

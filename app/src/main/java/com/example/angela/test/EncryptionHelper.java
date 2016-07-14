@@ -6,9 +6,9 @@ import javax.crypto.SecretKey;
 
 import android.util.Base64;
 
-import org.cryptonode.jncryptor.*;
 import org.cryptonode.jncryptor.AES256JNCryptor;
 import org.cryptonode.jncryptor.CryptorException;
+import org.cryptonode.jncryptor.JNCryptor;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
