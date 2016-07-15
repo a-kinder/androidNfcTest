@@ -80,33 +80,45 @@ public class WriteFragment extends Fragment {
 
         btnRead = (Button) fragmentView.findViewById(R.id.btnRead);
         btnRead.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //if(nfcUtils.writeTag(getActivity(), activity.tag, activity.currData, activity.location.name))
-               ArrayList<String> al = nfcUtils.readTag(activity.tag, activity.ntnt);
-                if (al == null) {
-                    activity.showToast(false);
-                } else {
-                    activity.createDialog(activity.getApplicationContext(), "Tag Contents", al.get(0), null).show();
-                }
-            }
-        });
+                                       @Override
+                                       public void onClick(View v) {
+                                           //if(nfcUtils.writeTag(getActivity(), activity.tag, activity.currData, activity.location.name))
+                                           ArrayList<String> al = nfcUtils.readTag(activity.tag, activity.ntnt);
+                                           if (al == null) {
+                                               activity.showToast(false);
+                                           } else {
+                                               if (!al.isEmpty()) {
+                                                   activity.createDialog(activity.getApplicationContext(), "Tag Contents", al.get(0), null).show();
+
+                                               } else {
+                                                   activity.createDialog(activity.getApplicationContext(), "Tag Contents", "Empty", null).show();
+
+                                               }
+                                           }
+                                       }
+                                   }
+
+        );
 
 
         btnWrite = (Button) fragmentView.findViewById(R.id.btnWrite);
-        btnWrite.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ArrayList<String> al = new ArrayList<String>();
-                al.add("some datadfghdfgdfgdfg");
+        btnWrite.setOnClickListener(new View.OnClickListener()
 
-                if (nfcUtils.writeTag(activity.getApplicationContext(), activity.tag, al, activity.location.getName())) {
-                    activity.showToast(true);
-                } else {
-                    activity.showToast(false);
-                }
-            }
-        });
+                                    {
+                                        @Override
+                                        public void onClick(View v) {
+                                            ArrayList<String> al = new ArrayList<String>();
+                                            al.add("some data");
+
+                                            if (nfcUtils.writeTag(activity.getApplicationContext(), activity.tag, al, activity.location.getName())) {
+                                                activity.showToast(true);
+                                            } else {
+                                                activity.showToast(false);
+                                            }
+                                        }
+                                    }
+
+        );
         return fragmentView;
 
 

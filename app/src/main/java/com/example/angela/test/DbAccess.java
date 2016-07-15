@@ -21,32 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DbAccess {
-    static final String tagTableName = "TAG";
-    static final String tagId = "id";
-    static final String tagUid = "uid";
-    static final String tagName = "tags";
-    static final String locTableName = "LOCATION";
-    static final String locId = "id";
-    static final String locName = "name";
-    static final String locTagTableName = locTableName + tagTableName;
-    static final String ltTagId = "tagId";
-    static final String ltLocId = "locId";
 
-
-    public static final String DATABASE_NAME = "NfcDb.db";
-    private static final int DATABASE_VERSION = 1;
-    private static final String CREATE_TAG_TABLE =
-            "CREATE TABLE " + tagTableName + " (" +
-                    tagId + " INTEGER PRIMARY KEY , " +
-                    tagUid + " TEXT);";
-    private static final String CREATE_LOCATION_TABLE =
-            "CREATE TABLE " + locTableName + " (" +
-                    locId + " INTEGER PRIMARY KEY , " +
-                    locName + " TEXT);";
-    private static final String CREATE_LOCATIONTAG_TABLE =
-            "CREATE TABLE " + locTagTableName + " (" +
-                    ltLocId + " INTEGER REFERENCES locations(id), " +
-                    ltTagId + " INTEGER REFERENCES tags(id));";
     private SQLiteDatabase db;
     //SQLiteOpenHelper dbHelper;
     DaoMaster daoMaster;
@@ -60,8 +35,7 @@ public class DbAccess {
         // seed();
         dbHelper = new DaoMaster.DevOpenHelper(context, "nfc-db", null);
         db = dbHelper.getWritableDatabase();
-        deleteAllLocations();
-        seed();
+
     }
 
     public boolean insertLocation(Location location) {
@@ -77,7 +51,7 @@ public class DbAccess {
             Log.d("DaoExample", "Inserted new location, ID: " + loc.getId());
             return true;
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            Log.d("Location error", e.getMessage());
         }
         return false;
     }
@@ -99,7 +73,7 @@ public class DbAccess {
             }
             return true;
         } catch (Exception e) {
-            System.out.println(e.getStackTrace());
+            Log.d("Tag error", e.getMessage());
             return false;
         }
     }
@@ -121,41 +95,65 @@ public class DbAccess {
     }
 
     public List<Tag> getAllTags() {
-//
-        daoMaster = new DaoMaster(db);
-        daoSession = daoMaster.newSession();
-        tagDao = daoSession.getTagDao();
 
-        List<Tag> list = tagDao.queryBuilder().list();
-        return list;
+        try {
+            Log.d("Tag", "Retrieving all records");
+            daoMaster = new DaoMaster(db);
+
+            daoSession = daoMaster.newSession();
+            tagDao = daoSession.getTagDao();
+
+            List<Tag> list = tagDao.queryBuilder().list();
+            return list;
+        } catch (Exception e) {
+            Log.d("Tag error", e.getMessage());
+            return null;
+        }
     }
 
     public Tag getTag(String uid) {
-//
-        daoMaster = new DaoMaster(db);
-        daoSession = daoMaster.newSession();
-        tagDao = daoSession.getTagDao();
+        try {
+            Log.d("Tag", "Retrieving single record");
 
-        return tagDao.queryBuilder().where(TagDao.Properties.Uid.eq(uid)).list().get(0);
+            daoMaster = new DaoMaster(db);
+            daoSession = daoMaster.newSession();
+            tagDao = daoSession.getTagDao();
+
+            return tagDao.queryBuilder().where(TagDao.Properties.Uid.eq(uid)).list().get(0);
+        } catch (Exception e) {
+            Log.d("Tag error", e.getMessage());
+            return null;
+        }
     }
 
     public Location getLocation(int id) {
-//
-        daoMaster = new DaoMaster(db);
-        daoSession = daoMaster.newSession();
-        locDao = daoSession.getLocationDao();
+        try {
+            Log.d("Location", "Retrieving single record");
 
-        return locDao.queryBuilder().where(TagDao.Properties.Id.eq(id)).list().get(0);
+            daoMaster = new DaoMaster(db);
+            daoSession = daoMaster.newSession();
+            locDao = daoSession.getLocationDao();
+
+            return locDao.queryBuilder().where(TagDao.Properties.Id.eq(id)).list().get(0);
+        } catch (Exception e) {
+            Log.d("Location retrieve error", e.getMessage());
+            return null;
+        }
     }
 
     public List<Location> getAllLocations() {
+        try {
+            Log.d("Location", "Retrieving all records");
 
-
-        daoMaster = new DaoMaster(db);
-        daoSession = daoMaster.newSession();
-        locDao = daoSession.getLocationDao();
-        List<Location> list = locDao.queryBuilder().list();
-        return list;
+            daoMaster = new DaoMaster(db);
+            daoSession = daoMaster.newSession();
+            locDao = daoSession.getLocationDao();
+            List<Location> list = locDao.queryBuilder().list();
+            return list;
+        } catch (Exception e) {
+            Log.d("Location error", e.getMessage());
+            return null;
+        }
     }
 
     public boolean deleteAllLocations() {
@@ -165,6 +163,7 @@ public class DbAccess {
             daoSession = daoMaster.newSession();
             locDao = daoSession.getLocationDao();
             locDao.deleteAll();
+            Log.d("Location delete", "All records deleted");
             return true;
         } catch (Exception e) {
             Log.d("Location delete error", e.getMessage());
@@ -173,28 +172,29 @@ public class DbAccess {
     }
 
     public void seed() {
+        try {
+            insertLocation(new Location(null, "Front Gate"));
+            insertLocation(new Location(null, "VIP"));
+            insertLocation(new Location(null, "Backstage"));
+            Log.d("Database seed", "Inserted 3 locations");
+        } catch (Exception e) {
+            Log.d("DB seed error", e.getMessage());
 
-        insertLocation(new Location(null, "Front Gate"));
-        insertLocation(new Location(null, "VIP"));
-        insertLocation(new Location(null, "Backstage"));
-    }
-
-    public void openDb() {
-        if (db == null) {
-            db = dbHelper.getWritableDatabase();
         }
     }
 
-    public void closeDb() {
-        db.close();
-    }
+//    public void openDb() {
+//        if (db == null) {
+//            db = dbHelper.getWritableDatabase();
+//        }
+//    }
+//
+//    public void closeDb() {
+//        db.close();
+//    }
 
     public boolean addLocationToTag(int locationId, String tagUid) {
         try {
-            ContentValues values = new ContentValues();
-            values.put(ltTagId, tagUid);
-            values.put(ltLocId, locationId);
-            db.insert(locTagTableName, null, values);
 
             return true;
         } catch (Exception e) {
@@ -203,27 +203,5 @@ public class DbAccess {
         return false;
     }
 
-    public class DbHelper extends SQLiteOpenHelper {
 
-        public DbHelper(Context context) {
-            super(context, DATABASE_NAME, null, 1);
-
-        }
-
-        @Override
-        public void onCreate(SQLiteDatabase db) {
-
-
-        }
-
-        @Override
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            db.execSQL("DROP TABLE IF EXISTS " + tagTableName);
-            db.execSQL("DROP TABLE IF EXISTS " + locTableName);
-            db.execSQL("DROP TABLE IF EXISTS " + locTableName + tagTableName);
-            onCreate(db);
-
-        }
-
-    }
 }
