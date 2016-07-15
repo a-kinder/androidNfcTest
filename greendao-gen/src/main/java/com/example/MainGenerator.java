@@ -22,7 +22,8 @@ public class MainGenerator {
     }
 
     private static void addTables(final Schema schema) {
-        Entity user = addLocation(schema);
+        Entity location = addLocation(schema);
+        Entity tag = addTag(schema);
 //        Entity repo = addRepo(schema);
 //
 //        Property userId = repo.addLongProperty("userId").notNull().getProperty();
@@ -30,11 +31,19 @@ public class MainGenerator {
     }
 
     private static Entity addLocation(final Schema schema) {
-        Entity user = schema.addEntity("User");
-        user.addIdProperty().primaryKey().autoincrement();
-        user.addStringProperty("name").notNull();
+        Entity location = schema.addEntity("Location");
+        location.addIdProperty().primaryKey().autoincrement();
+        location.addStringProperty("name").notNull();
 
-        return user;
+        return location;
+    }
+
+    private static Entity addTag(final Schema schema) {
+        Entity tag = schema.addEntity("Tag");
+        tag.addIdProperty().primaryKey().autoincrement();
+        tag.addStringProperty("uid").notNull();
+
+        return tag;
     }
 
 //    private static Entity addRepo(final Schema schema) {

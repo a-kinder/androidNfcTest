@@ -1,12 +1,9 @@
 package com.example.angela.test;
 
-import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.nfc.NfcAdapter;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.TabLayout;
@@ -17,11 +14,9 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.content.*;
@@ -33,21 +28,7 @@ import android.support.v7.app.AlertDialog;
 import android.view.*;
 
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
-
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-
+import com.abc.greendaoexample.db.Location;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,9 +77,9 @@ protected EncryptionHelper encryption = new EncryptionHelper();
 
         createFragments();
 
-        location.name = sharedpreferences.getString(NameKey, "No Location Selected");
+        location.setName(sharedpreferences.getString(NameKey, "No mLocation Selected"));
 
-        setTitle(location.name);
+        setTitle(location.getName());
 
         dbAccess = new DbAccess(this.getBaseContext());
 

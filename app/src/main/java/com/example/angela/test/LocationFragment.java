@@ -1,7 +1,5 @@
 package com.example.angela.test;
 
-import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,12 +10,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.concurrent.RunnableFuture;
+import java.util.List;
 
-import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.content.Context;
+
+import com.abc.greendaoexample.db.Location;
 
 public class LocationFragment extends Fragment {
     ListView listview;
@@ -29,7 +26,7 @@ public class LocationFragment extends Fragment {
     View fragmentView;
     ArrayAdapter<Location> myAdapter;
     MainActivity activity;
-    ArrayList<Location> locations;// = new ArrayList<Location>(Arrays.asList(new Location("VIP", 0), new Location("Front Gate", 1)));
+    List<Location> locations;// = new ArrayList<mLocation>(Arrays.asList(new mLocation("VIP", 0), new mLocation("Front Gate", 1)));
 
 
     public LocationFragment() {
@@ -66,16 +63,16 @@ public class LocationFragment extends Fragment {
                     @Override
                     public void run() {
                         activity.location = location;
-                        getActivity().setTitle(activity.location.name);
+                        getActivity().setTitle(activity.location.getName());
 
 
                         Editor editor = activity.sharedpreferences.edit();
-                        editor.putString(activity.NameKey, activity.location.name);
-                        editor.putInt(activity.IdKey, activity.location.id);
+                        editor.putString(activity.NameKey, activity.location.getName());
+                        editor.putLong(activity.IdKey, activity.location.getId());
                         editor.apply();
                     }
                 };
-                activity.createDialog(activity, "Changing Location", location.name.toUpperCase(), block).show();
+                activity.createDialog(activity, "Changing mLocation", location.getName().toUpperCase(), block).show();
 
 
             }

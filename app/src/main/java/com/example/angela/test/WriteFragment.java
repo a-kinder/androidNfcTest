@@ -100,7 +100,7 @@ public class WriteFragment extends Fragment {
                 ArrayList<String> al = new ArrayList<String>();
                 al.add("some datadfghdfgdfgdfg");
 
-                if (nfcUtils.writeTag(activity.getApplicationContext(), activity.tag, al, activity.location.name)) {
+                if (nfcUtils.writeTag(activity.getApplicationContext(), activity.tag, al, activity.location.getName())) {
                     activity.showToast(true);
                 } else {
                     activity.showToast(false);
