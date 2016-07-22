@@ -27,11 +27,20 @@ import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
 import android.view.*;
 
+import net.sqlcipher.database.SQLiteDatabase;
 
+//import org.greenrobot.greendao.database.*;
+import de.greenrobot.dao.database.*;
+import com.abc.greendaoexample.db.DaoMaster.*;
+import com.abc.greendaoexample.db.DaoMaster;
+import com.abc.greendaoexample.db.DaoSession;
 import com.abc.greendaoexample.db.Location;
+import com.example.angela.test.db.DbAccess;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class MainActivity extends AppCompatActivity {
     private List<Fragment> fragmentList = new ArrayList<>();
@@ -63,9 +72,15 @@ public class MainActivity extends AppCompatActivity {
     public static final String IdKey = "idKey";
     ViewPager viewPager;
     DbAccess dbAccess;
-protected EncryptionHelper encryption = new EncryptionHelper();
+    protected EncryptionHelper encryption = new EncryptionHelper();
+    public static final boolean ENCRYPTED = true;
+
+
+
+    private static DevOpenHelper sDevOpenHelper;
+    private static DaoMaster sDaoMaster;
     //TODO: add different location credentials
-     @Override
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -77,11 +92,11 @@ protected EncryptionHelper encryption = new EncryptionHelper();
 
         createFragments();
 
-        location.setName(sharedpreferences.getString(NameKey, "No mLocation Selected"));
+        location.setName(sharedpreferences.getString(NameKey, "No Location Selected"));
 
         setTitle(location.getName());
 
-        dbAccess = new DbAccess(this.getBaseContext());
+
 
     }
 
@@ -307,7 +322,6 @@ protected EncryptionHelper encryption = new EncryptionHelper();
         viewPager.setCurrentItem(1);
 
 
-
     }
 
     private class MyPagerAdapter extends FragmentStatePagerAdapter {
@@ -345,13 +359,12 @@ protected EncryptionHelper encryption = new EncryptionHelper();
      * REST TEST
      *********************/
 
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {//executes http request when refresh button pressed
         switch (item.getItemId()) {
             case R.id.action_refresh: {
                 String serverURL = "http://androidexample.com/media/webservice/JsonReturn.php";
-               // new LongOperation().execute(serverURL);
+                // new LongOperation().execute(serverURL);
             }
         }
         return super.onOptionsItemSelected(item);

@@ -6,6 +6,8 @@ import android.database.sqlite.SQLiteStatement;
 
 import de.greenrobot.dao.AbstractDao;
 import de.greenrobot.dao.Property;
+import de.greenrobot.dao.database.Database;
+import de.greenrobot.dao.database.DatabaseStatement;
 import de.greenrobot.dao.internal.DaoConfig;
 
 import com.abc.greendaoexample.db.Tag;
@@ -27,6 +29,8 @@ public class TagDao extends AbstractDao<Tag, Long> {
         public final static Property Uid = new Property(1, String.class, "uid", false, "UID");
     };
 
+    private DaoSession daoSession;
+
 
     public TagDao(DaoConfig config) {
         super(config);
@@ -34,10 +38,11 @@ public class TagDao extends AbstractDao<Tag, Long> {
     
     public TagDao(DaoConfig config, DaoSession daoSession) {
         super(config, daoSession);
+        this.daoSession = daoSession;
     }
 
     /** Creates the underlying database table. */
-    public static void createTable(SQLiteDatabase db, boolean ifNotExists) {
+    public static void createTable(Database db, boolean ifNotExists) {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "\"TAG\" (" + //
                 "\"_id\" INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
@@ -45,14 +50,14 @@ public class TagDao extends AbstractDao<Tag, Long> {
     }
 
     /** Drops the underlying database table. */
-    public static void dropTable(SQLiteDatabase db, boolean ifExists) {
+    public static void dropTable(Database db, boolean ifExists) {
         String sql = "DROP TABLE " + (ifExists ? "IF EXISTS " : "") + "\"TAG\"";
         db.execSQL(sql);
     }
 
     /** @inheritdoc */
     @Override
-    protected void bindValues(SQLiteStatement stmt, Tag entity) {
+    protected void bindValues(DatabaseStatement stmt, Tag entity) {
         stmt.clearBindings();
  
         Long id = entity.getId();
@@ -60,6 +65,12 @@ public class TagDao extends AbstractDao<Tag, Long> {
             stmt.bindLong(1, id);
         }
         stmt.bindString(2, entity.getUid());
+    }
+
+    @Override
+    protected void attachEntity(Tag entity) {
+        super.attachEntity(entity);
+        entity.__setDaoSession(daoSession);
     }
 
     /** @inheritdoc */

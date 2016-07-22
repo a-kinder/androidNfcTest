@@ -10,10 +10,13 @@ import android.nfc.tech.NfcF;
 import android.nfc.tech.NfcV;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
+
+import com.example.angela.test.db.DbAccess;
 
 import java.util.ArrayList;
 
@@ -64,12 +67,17 @@ public class WriteFragment extends Fragment {
         // Inflate the layout for this fragment
         final DbAccess dbAccess = new DbAccess(activity.getBaseContext());
 
-        btnCheck = (Button) fragmentView.findViewById(R.id.btnCheck);
+        btnCheck = (Button) fragmentView.findViewById(R.id.btnCheck);//checks uid
         btnCheck.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //if(nfcUtils.writeTag(getActivity(), activity.tag, activity.currData, activity.location.name))
-                if (dbAccess.insertTag(activity.uid)) {
+                if(activity.uid == null)
+                {
+                    Log.d("Tag error", "Tag UID is null");
+
+                }
+                if (dbAccess.insertTag(activity.uid, activity.location)) {//checks for tag, adds location if needed
                     activity.showToast(true);
                 } else {
                     activity.showToast(false);
@@ -85,6 +93,7 @@ public class WriteFragment extends Fragment {
                                            //if(nfcUtils.writeTag(getActivity(), activity.tag, activity.currData, activity.location.name))
                                            ArrayList<String> al = nfcUtils.readTag(activity.tag, activity.ntnt);
                                            if (al == null) {
+                                               Log.d("Nfc read error", "Nfc read error");
                                                activity.showToast(false);
                                            } else {
                                                if (!al.isEmpty()) {
@@ -92,6 +101,7 @@ public class WriteFragment extends Fragment {
 
                                                } else {
                                                    activity.createDialog(activity.getApplicationContext(), "Tag Contents", "Empty", null).show();
+                                                   Log.d("Nfc read error", "No data on tag");
 
                                                }
                                            }
@@ -114,6 +124,7 @@ public class WriteFragment extends Fragment {
                                                 activity.showToast(true);
                                             } else {
                                                 activity.showToast(false);
+                                                Log.d("Nfc write error", "Chip write failed");
                                             }
                                         }
                                     }

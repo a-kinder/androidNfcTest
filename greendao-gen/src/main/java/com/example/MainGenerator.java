@@ -24,10 +24,15 @@ public class MainGenerator {
     private static void addTables(final Schema schema) {
         Entity location = addLocation(schema);
         Entity tag = addTag(schema);
-//        Entity repo = addRepo(schema);
-//
-//        Property userId = repo.addLongProperty("userId").notNull().getProperty();
-//        user.addToMany(repo, userId, "userRepos");
+
+        //JOIN TABLE
+        Entity locationTag = schema.addEntity("LocationTag");
+        locationTag.addIdProperty();
+        Property exerciseId = locationTag.addLongProperty("location_id").getProperty();
+        Property accessoryId = locationTag.addLongProperty("tag_id").getProperty();
+
+        location.addToMany(locationTag, accessoryId).setName("locationFK");
+        tag.addToMany(locationTag, exerciseId).setName("tagFK");
     }
 
     private static Entity addLocation(final Schema schema) {
@@ -42,16 +47,7 @@ public class MainGenerator {
         Entity tag = schema.addEntity("Tag");
         tag.addIdProperty().primaryKey().autoincrement();
         tag.addStringProperty("uid").notNull();
-
         return tag;
     }
 
-//    private static Entity addRepo(final Schema schema) {
-//        Entity repo = schema.addEntity("Repo");
-//        repo.addIdProperty().primaryKey().autoincrement();
-//        repo.addStringProperty("title").notNull();
-//        repo.addStringProperty("language");
-//        repo.addIntProperty("watchers_count");
-//        return repo;
-//    }
 }

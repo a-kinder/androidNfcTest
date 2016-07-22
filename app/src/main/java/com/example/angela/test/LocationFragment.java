@@ -9,12 +9,12 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import android.content.SharedPreferences.Editor;
 
 import com.abc.greendaoexample.db.Location;
+import com.example.angela.test.db.DbAccess;
 
 public class LocationFragment extends Fragment {
     ListView listview;
