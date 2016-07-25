@@ -83,14 +83,14 @@ public class MainFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         txtView = (TextView) view.findViewById(R.id.textView);
 
-        ImageButton imgBtn = (ImageButton) view.findViewById(R.id.imageButton);
-        imgBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String serverURL = "http://androidexample.com/media/webservice/JsonReturn.php";
-                new LongOperation().execute(serverURL);
-            }
-        });
+//        ImageButton imgBtn = (ImageButton) view.findViewById(R.id.imageButton);//WEB SERVICE STUFF
+//        imgBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                String serverURL = "http://androidexample.com/media/webservice/JsonReturn.php";
+//                new LongOperation().execute(serverURL);
+//            }
+//        });
 
         return view;
     }
@@ -99,9 +99,6 @@ public class MainFragment extends Fragment {
 
     private class LongOperation extends AsyncTask<String, Void, Void> {
 
-        // Required initialization
-
-        //        private final HttpClient Client = new DefaultHttpClient();
         private String Content;
         private String Error = null;
         String data = "";

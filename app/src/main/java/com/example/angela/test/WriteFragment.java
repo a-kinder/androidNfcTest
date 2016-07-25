@@ -67,33 +67,35 @@ public class WriteFragment extends Fragment {
         // Inflate the layout for this fragment
         final DbAccess dbAccess = new DbAccess(activity.getBaseContext());
 
-        btnCheck = (Button) fragmentView.findViewById(R.id.btnCheck);//checks uid
+        btnCheck = (Button) fragmentView.findViewById(R.id.btnCheck);//checks and inserts to database
         btnCheck.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //if(nfcUtils.writeTag(getActivity(), activity.tag, activity.currData, activity.location.name))
                 if(activity.uid == null)
                 {
-                    Log.d("Tag error", "Tag UID is null");
-
-                }
-                if (dbAccess.insertTag(activity.uid, activity.location)) {//checks for tag, adds location if needed
-                    activity.showToast(true);
-                } else {
+                    Log.e("Tag error", "Tag UID is null");
                     activity.showToast(false);
+                }
+                else {
+                    if (dbAccess.getTag(activity.uid) == null) {//if tag is not in DB
+                        activity.t = dbAccess.insertTag(activity.uid, activity.location);//insert it
+                    }
+                    activity.showToast(true);
+
                 }
             }
         });
 
 
-        btnRead = (Button) fragmentView.findViewById(R.id.btnRead);
+        btnRead = (Button) fragmentView.findViewById(R.id.btnRead);//read and decrypt
         btnRead.setOnClickListener(new View.OnClickListener() {
                                        @Override
                                        public void onClick(View v) {
                                            //if(nfcUtils.writeTag(getActivity(), activity.tag, activity.currData, activity.location.name))
                                            ArrayList<String> al = nfcUtils.readTag(activity.tag, activity.ntnt);
                                            if (al == null) {
-                                               Log.d("Nfc read error", "Nfc read error");
+                                               Log.e("Nfc read error", "Nfc read error");
                                                activity.showToast(false);
                                            } else {
                                                if (!al.isEmpty()) {
@@ -101,7 +103,7 @@ public class WriteFragment extends Fragment {
 
                                                } else {
                                                    activity.createDialog(activity.getApplicationContext(), "Tag Contents", "Empty", null).show();
-                                                   Log.d("Nfc read error", "No data on tag");
+                                                   Log.e("Nfc read error", "No data on tag");
 
                                                }
                                            }
@@ -111,7 +113,7 @@ public class WriteFragment extends Fragment {
         );
 
 
-        btnWrite = (Button) fragmentView.findViewById(R.id.btnWrite);
+        btnWrite = (Button) fragmentView.findViewById(R.id.btnWrite);//write and encrypt
         btnWrite.setOnClickListener(new View.OnClickListener()
 
                                     {
@@ -124,7 +126,7 @@ public class WriteFragment extends Fragment {
                                                 activity.showToast(true);
                                             } else {
                                                 activity.showToast(false);
-                                                Log.d("Nfc write error", "Chip write failed");
+                                                Log.e("Nfc write error", "Chip write failed");
                                             }
                                         }
                                     }

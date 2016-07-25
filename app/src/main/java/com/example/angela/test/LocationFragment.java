@@ -9,6 +9,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.content.SharedPreferences.Editor;
@@ -49,7 +50,11 @@ public class LocationFragment extends Fragment {
         DbAccess dbAccess = new DbAccess(this.getActivity().getBaseContext());
 
         locations = dbAccess.getAllLocations();
-
+        if (locations.isEmpty())//TEMP FOR DEV
+        {
+            dbAccess.seed();
+            locations = dbAccess.getAllLocations();
+        }
         myAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, locations);
         fragmentView = inflater.inflate(R.layout.fragment_location, container, false);
         listview = (ListView) fragmentView.findViewById(R.id.listView);
@@ -58,7 +63,7 @@ public class LocationFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
 
-                final Location location =(Location) listview.getItemAtPosition(position);
+                final Location location = (Location) listview.getItemAtPosition(position);
                 Runnable block = new Runnable() {
                     @Override
                     public void run() {
@@ -72,7 +77,7 @@ public class LocationFragment extends Fragment {
                         editor.apply();
                     }
                 };
-                activity.createDialog(activity, "Changing mLocation", location.getName().toUpperCase(), block).show();
+                activity.createDialog(activity, "Changing Location", location.getName().toUpperCase(), block).show();
 
 
             }

@@ -4,6 +4,7 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Color;
 import android.nfc.NfcAdapter;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.TabLayout;
@@ -14,6 +15,7 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,10 +33,9 @@ import net.sqlcipher.database.SQLiteDatabase;
 
 //import org.greenrobot.greendao.database.*;
 import de.greenrobot.dao.database.*;
+
+import com.abc.greendaoexample.db.*;
 import com.abc.greendaoexample.db.DaoMaster.*;
-import com.abc.greendaoexample.db.DaoMaster;
-import com.abc.greendaoexample.db.DaoSession;
-import com.abc.greendaoexample.db.Location;
 import com.example.angela.test.db.DbAccess;
 
 import java.io.File;
@@ -50,7 +51,8 @@ public class MainActivity extends AppCompatActivity {
     private NfcAdapter myNfcAdapter;
     private AlertDialog dialog;
     protected Intent ntnt;
-    protected Tag tag;
+    protected Tag tag;//java tag object
+    com.abc.greendaoexample.db.Tag t;//my tag object
     private NfcUtils nfcUtil = new NfcUtils();
     String uid;
     Location location = new Location();
@@ -76,9 +78,9 @@ public class MainActivity extends AppCompatActivity {
     public static final boolean ENCRYPTED = true;
 
 
-
     private static DevOpenHelper sDevOpenHelper;
     private static DaoMaster sDaoMaster;
+
     //TODO: add different location credentials
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,11 +95,12 @@ public class MainActivity extends AppCompatActivity {
         createFragments();
 
         location.setName(sharedpreferences.getString(NameKey, "No Location Selected"));
+        location.setId(sharedpreferences.getLong(IdKey, 0));
 
         setTitle(location.getName());
 
-
-
+        dbAccess = new DbAccess(this.getApplicationContext());
+        dbAccess.seed();
     }
 
     @Override
@@ -137,6 +140,8 @@ public class MainActivity extends AppCompatActivity {
         uid = encryption.bytesToHex(intent.getByteArrayExtra(NfcAdapter.EXTRA_ID));
         tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
         ntnt = intent;
+        t = dbAccess.getTag(uid);
+
         if (viewPager.getCurrentItem() == 1) {
             checkCreds();
         }
@@ -161,14 +166,15 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onStop() {
+        dbAccess.close();
         super.onStop();
     }
 
     public void checkCreds() {
+        Log.d("Creds", "Checking location credentials against tag");
+        if (t != null) {
 
-        if (tag != null) {
-
-            if (dbAccess.checkUid(uid)) {
+            if (dbAccess.checkTagLocation(t, location)) {// checks db against current location
                 showToast(true);
             } else {
                 showToast(false);
