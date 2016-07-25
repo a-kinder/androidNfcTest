@@ -25,6 +25,7 @@ import android.os.Handler;
 import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -147,7 +148,7 @@ public class MainFragment extends Fragment {
 
                 reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                 StringBuilder sb = new StringBuilder();
-                String line = null;
+                String line;
 
                 // Read Server Response
                 while ((line = reader.readLine()) != null) {
@@ -164,6 +165,7 @@ public class MainFragment extends Fragment {
 
                     reader.close();
                 } catch (Exception ex) {
+                    Log.e("Exception", "message:"+ ex.getMessage());
                 }
             }
 

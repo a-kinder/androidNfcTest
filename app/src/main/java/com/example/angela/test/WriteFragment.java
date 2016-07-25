@@ -119,7 +119,7 @@ public class WriteFragment extends Fragment {
                                     {
                                         @Override
                                         public void onClick(View v) {
-                                            ArrayList<String> al = new ArrayList<String>();
+                                            ArrayList<String> al = new ArrayList<>();
                                             al.add("some data");
 
                                             if (nfcUtils.writeTag(activity.getApplicationContext(), activity.tag, al, activity.location.getName())) {

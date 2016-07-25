@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private NfcUtils nfcUtil = new NfcUtils();
     String uid;
     Location location = new Location();
-    ArrayList<String> currData = new ArrayList<String>();
+    ArrayList<String> currData = new ArrayList<>();
     private final String[][] techList = new String[][]{
             new String[]{
                     NfcA.class.getName(),
