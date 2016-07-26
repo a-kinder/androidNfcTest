@@ -99,14 +99,13 @@ public class MainActivity extends AppCompatActivity {
 
         setTitle(location.getName());
 
-        dbAccess = new DbAccess(this.getApplicationContext());
-        dbAccess.seed();
+        openDb();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
+        openDb();
         /**
          * It's important, that the activity is in the foreground (resumed). Otherwise
          * an IllegalStateException is thrown.
@@ -136,12 +135,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onNewIntent(Intent intent) {
-
+        openDb();
         uid = encryption.bytesToHex(intent.getByteArrayExtra(NfcAdapter.EXTRA_ID));
         tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
         ntnt = intent;
         t = dbAccess.getTag(uid);
-
+        Log.i("Tag", "Instantiating tag object " + uid);
         if (viewPager.getCurrentItem() == 1) {
             checkCreds();
         }
@@ -153,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
          * Call this before onPause, otherwise an IllegalArgumentException is thrown as well.
          */
         //stopForegroundDispatch(this, myNfcAdapter);
+        dbAccess.close();
         if (checkNfcAdapter()) {
             // setupForegroundDispatch(this, myNfcAdapter);
             myNfcAdapter.disableForegroundDispatch(this);
@@ -172,15 +172,20 @@ public class MainActivity extends AppCompatActivity {
 
     public void checkCreds() {
         Log.d("Creds", "Checking location credentials against tag");
-        if (t != null) {
+        if (t != null && tag != null) {
 
             if (dbAccess.checkTagLocation(t, location)) {// checks db against current location
                 showToast(true);
             } else {
                 showToast(false);
+                Log.d("Checking Creds", "Credential check failed");
             }
-        } else {
+        } else if (tag == null) {//tag is not in DB at all
             showToast(false);
+            Log.w("Checking Creds", "Tag intent is null");
+        } else if (t == null) {//tag is not in DB at all
+            showToast(false);
+            Log.w("Checking Creds", "Tag object is null");
         }
         tag = null;
 
@@ -376,6 +381,18 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
+    public boolean openDb() {
+        if (dbAccess == null) {
+            try {
+                dbAccess = new DbAccess(this.getApplicationContext());
+                dbAccess.seed();
+                return true;
+            } catch (Exception e) {
+                Log.e("Db Open Error", "message-" + e.getMessage());
+                return false;
+            }
+        }
+        return true;
+    }
 }
 

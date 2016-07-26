@@ -71,15 +71,13 @@ public class WriteFragment extends Fragment {
         btnCheck.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //if(nfcUtils.writeTag(getActivity(), activity.tag, activity.currData, activity.location.name))
-                if(activity.uid == null)
-                {
+                if (activity.uid == null) {
                     Log.e("Tag error", "Tag UID is null");
                     activity.showToast(false);
-                }
-                else {
+                } else {
                     if (dbAccess.getTag(activity.uid) == null) {//if tag is not in DB
                         activity.t = dbAccess.insertTag(activity.uid, activity.location);//insert it
+                        dbAccess.addLocationTag(activity.location, activity.t);
                     }
                     activity.showToast(true);
 

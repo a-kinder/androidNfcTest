@@ -18,6 +18,7 @@ import com.abc.greendaoexample.db.LocationTag;
 import com.abc.greendaoexample.db.LocationTagDao;
 import com.abc.greendaoexample.db.Tag;
 import com.abc.greendaoexample.db.TagDao;
+import com.example.angela.test.MainActivity;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
@@ -30,6 +31,7 @@ import de.greenrobot.dao.database.EncryptedDatabase;
 
 
 import de.greenrobot.dao.database.EncryptedDatabaseOpenHelper;
+import de.greenrobot.dao.query.QueryBuilder;
 
 public class DbAccess {
 
@@ -42,16 +44,26 @@ public class DbAccess {
     LocationTagDao locTagDao;
     //    DaoMaster.DevOpenHelper dbHelper;
     Database db;
-
+Context context;
     public DbAccess(Context context) {
+        this.context = context;
+        open(context);
+    }
 
-        db = new DaoMaster.EncryptedOpenHelper(context, "mydatabase") {
-            @Override
-            public void onUpgrade(Database db, int oldVersion, int newVersion) {
-                // Use db.execSQL(...) to execute SQL for schema updates
-            }
-        }.getReadableDatabase("secret-password");
-        daoSession = new DaoMaster(db).newSession();
+    public boolean open(Context context) {
+        try {
+            db = new DaoMaster.EncryptedOpenHelper(context, "mydatabase") {
+                @Override
+                public void onUpgrade(Database db, int oldVersion, int newVersion) {
+                    // Use db.execSQL(...) to execute SQL for schema updates
+                }
+            }.getReadableDatabase("secret-password");
+            daoSession = new DaoMaster(db).newSession();
+            return true;
+        } catch (Exception e) {
+            Log.e("DB open error", "Message:" + e.getMessage());
+            return false;
+        }
     }
 
     public boolean close() {
@@ -65,6 +77,7 @@ public class DbAccess {
     }
 
     public Location insertLocation(String name) {
+        open(context);
         try {
 
             locDao = daoSession.getLocationDao();
@@ -72,13 +85,17 @@ public class DbAccess {
             com.abc.greendaoexample.db.Location loc = new com.abc.greendaoexample.db.Location(null, name);
             loc.setId(locDao.insert(loc));
             Log.d("DaoExample", "Inserted new location, ID: " + loc.getId());
+            close();
             return loc;
         } catch (Exception e) {
             Log.d("Location error", e.getMessage());
         }
+        close();
         return null;
     }
+
     public Location insertLocation(Long id, String name) {
+        open(context);
         try {
 
             locDao = daoSession.getLocationDao();
@@ -92,7 +109,9 @@ public class DbAccess {
         }
         return null;
     }
+
     public Tag insertTag(String uid, Location loc) {
+        open(context);
         Tag tag = new Tag();
         try {
 
@@ -103,10 +122,7 @@ public class DbAccess {
             tag.setId(tagDao.insert(new com.abc.greendaoexample.db.Tag(null, uid)));
             tag.setUid(uid);
             Log.d("DaoExample", "Inserted new tag, ID: " + uid);
-            if (loc != null)//checks for and adds join data
-            {
-                addLocationToTag(loc, tag);
-            }
+
             return tag;
         } catch (Exception e) {
             Log.d("Tag error", "message: " + e.getMessage());
@@ -114,23 +130,8 @@ public class DbAccess {
         }
     }
 
-//    public Tag checkUid(String uid) {
-//
-//        Tag tag;
-//        tagDao = daoSession.getTagDao();
-//
-//        List<Tag> tags = getAllTags();
-//        for (int i = 0; i < tags.size(); i++) {
-//            tag = tags.get(i);
-//            if (uid.equals(tag.getUid())) {
-//                return tag;
-//            }
-//        }
-//        insertTag(uid, null);
-//        return getTag(uid);
-//    }
-
     public List<Tag> getAllTags() {
+        open(context);
 
         try {
             Log.d("Tag", "Retrieving all records");
@@ -150,6 +151,7 @@ public class DbAccess {
     }
 
     public Tag getTag(String uid) {
+        open(context);
         try {
             Log.d("Tag", "Retrieving single record");
 
@@ -166,6 +168,7 @@ public class DbAccess {
     }
 
     public Location getLocation(int id) {
+        open(context);
         try {
             Log.d("Location", "Retrieving single record");
 
@@ -183,6 +186,7 @@ public class DbAccess {
     }
 
     public List<Location> getAllLocations() {
+        open(context);
         try {
             Log.d("Location", "Retrieving all records");
 
@@ -199,6 +203,7 @@ public class DbAccess {
     }
 
     public boolean deleteAllLocations() {
+        open(context);
 
         try {
 //            daoMaster = new DaoMaster(db);
@@ -214,6 +219,7 @@ public class DbAccess {
     }
 
     public boolean deleteAllTags() {
+        open(context);
         try {
             tagDao = daoSession.getTagDao();
             tagDao.deleteAll();
@@ -226,6 +232,7 @@ public class DbAccess {
     }
 
     public boolean deleteAllLocationTags() {
+        open(context);
         try {
 //            daoSession = daoMaster.newSession();
             locTagDao = daoSession.getLocationTagDao();
@@ -239,14 +246,15 @@ public class DbAccess {
     }
 
     public void seed() {
+        open(context);
         deleteAllLocations();
         deleteAllLocationTags();
         deleteAllLocations();
         deleteAllTags();
         try {
-            insertLocation(Long.valueOf(1),"Front Gate");
-            insertLocation(Long.valueOf(2),"VIP");
-            insertLocation(Long.valueOf(3),"Backstage");
+            insertLocation(Long.valueOf(1), "Front Gate");
+            insertLocation(Long.valueOf(2), "VIP");
+            insertLocation(Long.valueOf(3), "Backstage");
             Log.d("Database seed", "Inserted 3 locations");
         } catch (Exception e) {
             Log.e("DB seed error", e.getMessage());
@@ -254,7 +262,8 @@ public class DbAccess {
         }
     }
 
-    public boolean addLocationToTag(Location loc, Tag tag) {
+    public boolean addLocationTag(Location loc, Tag tag) {
+        open(context);
         try {
             locTagDao = daoSession.getLocationTagDao();
 
@@ -263,10 +272,16 @@ public class DbAccess {
                 List<LocationTag> ltList = locTagDao.queryBuilder().where(LocationTagDao.Properties.Location_id.eq(loc.getId())).where(LocationTagDao.Properties.Tag_id.eq(tag.getId())).list();
                 if (ltList.isEmpty()) {
                     Log.d("Tag Location", "inserting join data to Db");
-                    LocationTag lt = new LocationTag(null, tag.getId(), loc.getId());
+                    LocationTag lt = new LocationTag(null, loc.getId(), tag.getId());
                     locTagDao.insert(lt);//make this transactional
                     Log.d("Tag Location", "inserted location " + loc.getId() + " and tag " + tag.getId());
+//TEST
+                    List<LocationTag> l = locTagDao.loadAll();
+                    for (int i = 0; i < l.size(); i++) {
+                        Log.i("LocationTag: " + l.get(i).getId().toString(), l.get(i).getLocation_id() + " - " + l.get(i).getTag_id());
+                    }
 
+                    //TEST
                     return true;
                 }
 
@@ -292,13 +307,36 @@ public class DbAccess {
     }
 
     public boolean checkTagLocation(Tag tag, Location loc) {
+        open(context);
         Log.d("checking join table", "Looking for Location " + loc.getId() + " and tag " + tag.getId());
         try {
             locTagDao = daoSession.getLocationTagDao();
-            List<LocationTag> ltList = locTagDao.queryBuilder().where(LocationTagDao.Properties.Location_id.eq(loc.getId())).where(LocationTagDao.Properties.Tag_id.eq(tag.getId())).list();//checks join table for ids
-            return ltList.isEmpty();
+
+
+            QueryBuilder qb = locTagDao.queryBuilder();
+
+            qb.where(LocationTagDao.Properties.Location_id.eq(loc.getId()), LocationTagDao.Properties.Tag_id.eq(tag.getId()));
+            List<LocationTag> ltList = qb.list();
+
+
+            //TEST
+            Log.i("LocationTags", "Listing:");
+
+            for (int i = 0; i < ltList.size(); i++) {
+
+                Log.i("LocationTag: " + ltList.get(i).getId().toString(), "location: " + ltList.get(i).getLocation_id() + " - tag: " + ltList.get(i).getTag_id());
+            }
+
+            //TEST
+
+            if (ltList.size() > 0) {
+                return true;
+            } else {
+                return false;
+            }
+            //  return ltList.isEmpty();
         } catch (Exception e) {
-            Log.e("Check Tag Location", "message: " + e.getMessage());
+            Log.e("Tag Location Error", "message: " + e.getMessage());
             return false;
         }
     }
